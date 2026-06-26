@@ -1,29 +1,41 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { lazy, Suspense, useEffect, useState } from "react";
+
+// R3F + Three.js are browser-only; load on the client.
+const AyatApp = lazy(() =>
+  import("../components/AyatApp.client").then((m) => ({ default: m.AyatApp })),
+);
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "AYAT AL-KAWN — An Interactive Journey Through the Universe" },
+      {
+        name: "description",
+        content:
+          "An immersive 3D platform to explore, understand and contemplate the known Universe.",
+      },
+      { property: "og:title", content: "AYAT AL-KAWN" },
+      {
+        property: "og:description",
+        content: "An interactive journey through the Universe.",
+      },
     ],
   }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <main className="fixed inset-0 overflow-hidden bg-black">
+      {mounted ? (
+        <Suspense fallback={null}>
+          <AyatApp />
+        </Suspense>
+      ) : null}
+    </main>
   );
 }
