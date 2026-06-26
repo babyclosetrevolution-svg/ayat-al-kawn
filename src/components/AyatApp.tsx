@@ -3,26 +3,27 @@ import { Engine } from "../engine/Engine";
 import { WorldScene } from "../world/WorldScene";
 import { TitleScreen } from "../ui/TitleScreen";
 import { LoadingOverlay } from "../ui/LoadingOverlay";
+import { ObjectSelector } from "../ui/ObjectSelector";
+import { TitleBar } from "../ui/TitleBar";
 
 /**
  * AyatApp — client-only composition root.
- * Orchestrates loading → title → exploration states. Rendering, world,
- * and UI remain independent modules; this file only wires them together.
+ * Orchestrates loading → title → exploration states. Each layer remains
+ * independent; this file only wires them together.
  */
 export function AyatApp() {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [exploring, setExploring] = useState(false);
 
-  // Simulated boot sequence — replaced by real AssetManager streaming later.
   useEffect(() => {
     let raf = 0;
     const start = performance.now();
     const tick = (t: number) => {
-      const p = Math.min(1, (t - start) / 1400);
+      const p = Math.min(1, (t - start) / 1600);
       setProgress(p);
       if (p < 1) raf = requestAnimationFrame(tick);
-      else setTimeout(() => setLoading(false), 250);
+      else setTimeout(() => setLoading(false), 300);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
@@ -33,6 +34,8 @@ export function AyatApp() {
       <Engine>
         <WorldScene />
       </Engine>
+      <TitleBar visible={exploring} />
+      <ObjectSelector visible={exploring} />
       <TitleScreen visible={!loading && !exploring} onBegin={() => setExploring(true)} />
       <LoadingOverlay visible={loading} progress={progress} />
     </div>

@@ -3,7 +3,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 
 // R3F + Three.js are browser-only; load on the client.
 const AyatApp = lazy(() =>
-  import("../components/AyatApp.client").then((m) => ({ default: m.AyatApp })),
+  import("../components/AyatApp").then((m) => ({ default: m.AyatApp })),
 );
 
 export const Route = createFileRoute("/")({
