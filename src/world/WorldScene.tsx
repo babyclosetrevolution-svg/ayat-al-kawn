@@ -1,19 +1,15 @@
 import { Starfield } from "./Starfield";
-import { Sun } from "./objects/Sun";
-import { Earth } from "./objects/Earth";
-import { Moon } from "./objects/Moon";
+import { Universe } from "./scene/Universe";
 
 /**
- * WorldScene — Phase 2: Sun, Earth, Moon system.
- * Future phases will compose additional astronomical objects alongside these.
+ * WorldScene — top of the visible scene graph.
+ * Phase 3: starfield backdrop + data-driven Universe.
  */
 export function WorldScene() {
   return (
     <>
       <Starfield />
-      <Sun />
-      <Earth />
-      <Moon />
+      <Universe />
     </>
   );
 }

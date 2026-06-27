@@ -1,11 +1,13 @@
 import * as THREE from "three";
 
 /**
- * FocusTarget — identifies a celestial body the camera should track.
- * Worlds register their world-space position; the camera system reads
- * the active target each frame and smoothly interpolates to it.
+ * FocusRegistry — every renderable celestial body publishes its world-space
+ * position here so the CameraSystem can lerp toward whichever id is active.
+ *
+ * FocusKey is intentionally `string | null`: it is the body's `id`, which keeps
+ * the registry data-driven (new planets register their id automatically).
  */
-export type FocusKey = "sun" | "earth" | "moon" | null;
+export type FocusKey = string | null;
 
 interface TargetRecord {
   position: THREE.Vector3;
@@ -14,15 +16,15 @@ interface TargetRecord {
 }
 
 class FocusRegistryImpl {
-  private targets = new Map<Exclude<FocusKey, null>, TargetRecord>();
+  private targets = new Map<string, TargetRecord>();
   private active: FocusKey = "earth";
   private listeners = new Set<(k: FocusKey) => void>();
 
-  register(key: Exclude<FocusKey, null>, record: TargetRecord) {
+  register(key: string, record: TargetRecord) {
     this.targets.set(key, record);
   }
 
-  get(key: Exclude<FocusKey, null>): TargetRecord | undefined {
+  get(key: string): TargetRecord | undefined {
     return this.targets.get(key);
   }
 
