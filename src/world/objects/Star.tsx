@@ -1,13 +1,13 @@
 import { useMemo, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { CelestialBodyData } from "../types/CelestialBody";
 import { FocusRegistry } from "../state/focus";
 import { EmissiveStarMaterial } from "../materials/EmissiveStarMaterial";
+import { useRotation } from "../../sim";
 
 /**
- * Star — generic emissive body. Every star in the universe is an instance
- * of this component; behaviour is fully driven by `data`.
+ * Star — generic emissive body. Axial spin is delegated to the simulation
+ * layer (`useRotation`) so global pause / time scaling apply uniformly.
  */
 export function Star({ data }: { data: CelestialBodyData }) {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -15,7 +15,6 @@ export function Star({ data }: { data: CelestialBodyData }) {
     () => new THREE.Vector3(...(data.position ?? [0, 0, 0])),
     [data],
   );
-  const omega = (2 * Math.PI) / data.rotationPeriod;
 
   useMemo(() => {
     FocusRegistry.register(data.id, {
@@ -24,9 +23,7 @@ export function Star({ data }: { data: CelestialBodyData }) {
     });
   }, [data, pos]);
 
-  useFrame((_, dt) => {
-    if (meshRef.current) meshRef.current.rotation.y += dt * omega;
-  });
+  useRotation(meshRef, { period: data.rotationPeriod });
 
   const e = data.emissive;
 

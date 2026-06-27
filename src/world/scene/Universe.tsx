@@ -1,4 +1,6 @@
-import { SOLAR_SYSTEM_BODIES } from "../../data/solar-system/bodies";
+import { useEffect, useState } from "react";
+import type { CelestialBodyData } from "../types/CelestialBody";
+import { CatalogManager } from "../../sim";
 import { Galaxy } from "./Galaxy";
 import { SolarSystem } from "./SolarSystem";
 
@@ -7,14 +9,31 @@ import { SolarSystem } from "./SolarSystem";
  *
  *   Universe → Galaxy → SolarSystem → Star → Planet → Moon
  *
- * Phase 3 ships a single Galaxy hosting a single SolarSystem. The shape is
- * what matters: future phases plug additional systems / galaxies in here
- * without touching the rendering layer.
+ * Bodies are pulled from the CatalogManager rather than imported
+ * directly, so future catalogs (additional systems, exoplanets) plug in
+ * without touching this file.
  */
 export function Universe() {
+  const [bodies, setBodies] = useState<CelestialBodyData[] | null>(
+    CatalogManager.get("solar-system") ?? null,
+  );
+
+  useEffect(() => {
+    if (bodies) return;
+    let cancelled = false;
+    CatalogManager.load("solar-system").then((b) => {
+      if (!cancelled) setBodies(b);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [bodies]);
+
+  if (!bodies) return null;
+
   return (
     <Galaxy>
-      <SolarSystem bodies={SOLAR_SYSTEM_BODIES} />
+      <SolarSystem bodies={bodies} />
     </Galaxy>
   );
 }

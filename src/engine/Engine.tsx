@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { ENGINE_CONFIG } from "../core/config";
 import { CameraSystem } from "./CameraSystem";
 import { LightingSystem } from "./LightingSystem";
+import { SimulationClock } from "../sim";
 
 interface EngineProps {
   children: ReactNode;
@@ -36,6 +37,7 @@ export function Engine({ children, fallback = null }: EngineProps) {
       }}
     >
       <Suspense fallback={fallback}>
+        <SimulationClock />
         <LightingSystem />
         <CameraSystem />
         {children}
