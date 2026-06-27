@@ -1,57 +1,50 @@
 import { useMemo, useRef } from "react";
-import { useFrame, useLoader } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import type { CelestialBodyData } from "../types/CelestialBody";
 import { FocusRegistry } from "../state/focus";
-import { EARTH_POSITION } from "./Earth";
+import { PlanetMaterial } from "../materials/PlanetMaterial";
 
 /**
- * Moon — small companion to Earth.
- * Realistic albedo, tidally-locked rotation (same period as orbit),
- * orbits Earth slowly so the scene feels alive without being busy.
+ * Moon — generic satellite. Orbits its parent via a pivot group placed at
+ * the parent's local origin; tidal-lock is the default (rotationPeriod ===
+ * orbital period) but any rotationPeriod value is honoured.
  */
-const MOON_RADIUS = 0.55;
-const MOON_DISTANCE = 7;
-const MOON_TEX = "https://cdn.jsdelivr.net/gh/mrdoob/three.js@r160/examples/textures/planets/moon_1024.jpg";
-
-export function Moon() {
+export function Moon({ data }: { data: CelestialBodyData }) {
   const pivotRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.Mesh>(null);
 
-  const map = useLoader(THREE.TextureLoader, MOON_TEX);
-  useMemo(() => {
-    map.colorSpace = THREE.SRGBColorSpace;
-    map.anisotropy = 8;
-  }, [map]);
+  const omega = (2 * Math.PI) / data.rotationPeriod;
+  const orbitOmega = data.orbit ? (2 * Math.PI) / data.orbit.period : 0;
+  const distance = data.orbit?.distance ?? 0;
+  const phase = data.orbit?.phase ?? 0;
+  const inclination = ((data.orbit?.inclination ?? 0) * Math.PI) / 180;
 
   useMemo(() => {
-    // Initial position; updated each frame as it orbits.
-    FocusRegistry.register("moon", {
-      position: EARTH_POSITION.clone().add(new THREE.Vector3(MOON_DISTANCE, 0, 0)),
-      distance: MOON_RADIUS * 6,
+    FocusRegistry.register(data.id, {
+      position: new THREE.Vector3(distance, 0, 0),
+      distance: data.radius * (data.focusDistanceFactor ?? 6),
     });
-  }, []);
+  }, [data, distance]);
 
-  useFrame((_, delta) => {
+  useFrame((_, dt) => {
     if (pivotRef.current) {
-      pivotRef.current.rotation.y += delta * 0.06; // orbit
-      // Update registered position for camera focus tracking.
-      const rec = FocusRegistry.get("moon");
-      if (rec && meshRef.current) {
-        meshRef.current.getWorldPosition(rec.position);
-      }
+      pivotRef.current.rotation.y += dt * orbitOmega;
+      const rec = FocusRegistry.get(data.id);
+      if (rec && meshRef.current) meshRef.current.getWorldPosition(rec.position);
     }
-    if (meshRef.current) meshRef.current.rotation.y += delta * 0.06; // tidal lock
+    if (meshRef.current) meshRef.current.rotation.y += dt * omega;
   });
 
   return (
-    <group ref={pivotRef} position={EARTH_POSITION}>
+    <group ref={pivotRef} rotation={[inclination, phase, 0]}>
       <mesh
         ref={meshRef}
-        position={[MOON_DISTANCE, 0, 0]}
-        userData={{ focusKey: "moon" }}
+        position={[distance, 0, 0]}
+        userData={{ focusKey: data.id }}
       >
-        <sphereGeometry args={[MOON_RADIUS, 96, 96]} />
-        <meshStandardMaterial map={map} roughness={1} metalness={0} />
+        <sphereGeometry args={[data.radius, 96, 96]} />
+        <PlanetMaterial material={data.material} textures={data.textures} />
       </mesh>
     </group>
   );
