@@ -8,11 +8,11 @@ import { AtmosphereLayer } from "../components/AtmosphereLayer";
 import { CloudLayer } from "../components/CloudLayer";
 import { RingLayer } from "../components/RingLayer";
 import { Moon } from "./Moon";
+import { useRotation } from "../../sim";
 
 /**
- * Planet — generic solid body. Composes optional atmosphere / clouds / rings
- * and renders any attached moons inside its local frame, so a moon's parent
- * transform is "free" via the scene graph.
+ * Planet — generic solid body. Axial rotation flows through the simulation
+ * layer; live world-space position is published to the FocusRegistry.
  */
 interface Props {
   data: CelestialBodyData;
@@ -27,7 +27,6 @@ export function Planet({ data, moons = [], starPosition }: Props) {
     () => new THREE.Vector3(...(data.position ?? [0, 0, 0])),
     [data],
   );
-  const omega = (2 * Math.PI) / data.rotationPeriod;
   const tilt = ((data.axialTilt ?? 0) * Math.PI) / 180;
 
   useMemo(() => {
@@ -37,8 +36,11 @@ export function Planet({ data, moons = [], starPosition }: Props) {
     });
   }, [data, pos]);
 
-  useFrame((_, dt) => {
-    if (meshRef.current) meshRef.current.rotation.y += dt * omega;
+  useRotation(meshRef, { period: data.rotationPeriod });
+
+  // World-space position publishing stays on render time — it is purely
+  // a camera concern, not a simulation concern.
+  useFrame(() => {
     if (groupRef.current) {
       const rec = FocusRegistry.get(data.id);
       if (rec) groupRef.current.getWorldPosition(rec.position);
