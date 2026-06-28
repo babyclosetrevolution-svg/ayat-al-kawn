@@ -10,6 +10,10 @@ import type { MaterialDef, TextureDef } from "../types/CelestialBody";
  *  - When a specularMap is supplied OR kind is `earthlike`, we use Phong so
  *    oceans glint against star light.
  *  - Otherwise we use Standard with preset roughness keyed to the material kind.
+ *
+ * If no textures are supplied the material falls back to a colored standard
+ * material — required for the bulk of the Solar System planets which we
+ * render texture-less for size reasons.
  */
 interface Props {
   material?: MaterialDef;
@@ -33,28 +37,72 @@ function presetRoughness(kind: MaterialDef["kind"]): number {
   }
 }
 
+function presetColor(kind: MaterialDef["kind"]): string {
+  switch (kind) {
+    case "ice":
+      return "#cfe7ff";
+    case "desert":
+      return "#c89060";
+    case "gas":
+      return "#d8c79a";
+    case "lava":
+      return "#ff7242";
+    case "earthlike":
+      return "#3a6da8";
+    default:
+      return "#888888";
+  }
+}
+
 export function PlanetMaterial({ material, textures }: Props) {
-  // Stable, ordered URL list so hook count is deterministic per render.
+  const hasTextures = Boolean(
+    textures?.map ||
+      textures?.normalMap ||
+      textures?.specularMap ||
+      textures?.roughnessMap,
+  );
+
+  if (hasTextures) {
+    return <TexturedPlanetMaterial material={material} textures={textures!} />;
+  }
+
+  const kind = material?.kind ?? "rock";
+  const color = new THREE.Color(material?.color ?? presetColor(kind));
+
+  return (
+    <meshStandardMaterial
+      color={color}
+      roughness={material?.roughness ?? presetRoughness(kind)}
+      metalness={material?.metalness ?? 0}
+    />
+  );
+}
+
+function TexturedPlanetMaterial({
+  material,
+  textures,
+}: {
+  material?: MaterialDef;
+  textures: TextureDef;
+}) {
   const urls = useMemo(
     () =>
       [
-        textures?.map,
-        textures?.normalMap,
-        textures?.specularMap,
-        textures?.roughnessMap,
+        textures.map,
+        textures.normalMap,
+        textures.specularMap,
+        textures.roughnessMap,
       ].filter((u): u is string => Boolean(u)),
     [textures],
   );
 
-  // useLoader requires at least one entry; callers always supply at least `map`.
-  // For texture-less bodies, future code can branch before mounting this component.
   const loaded = useLoader(THREE.TextureLoader, urls);
 
   let i = 0;
-  const map = textures?.map ? loaded[i++] : undefined;
-  const normalMap = textures?.normalMap ? loaded[i++] : undefined;
-  const specularMap = textures?.specularMap ? loaded[i++] : undefined;
-  const roughnessMap = textures?.roughnessMap ? loaded[i++] : undefined;
+  const map = textures.map ? loaded[i++] : undefined;
+  const normalMap = textures.normalMap ? loaded[i++] : undefined;
+  const specularMap = textures.specularMap ? loaded[i++] : undefined;
+  const roughnessMap = textures.roughnessMap ? loaded[i++] : undefined;
 
   useMemo(() => {
     [map, normalMap, specularMap, roughnessMap].forEach((t) => {
