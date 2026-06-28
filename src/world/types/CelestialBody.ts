@@ -78,6 +78,33 @@ export interface OrbitDef {
 }
 
 /**
+ * Scientific metadata block — exposed so future panels (encyclopedia,
+ * comparator, mission planner) can read structured facts without parsing
+ * free-form descriptions. Every field is optional.
+ */
+export interface ScienceFacts {
+  /** Real-world equatorial radius, km. */
+  radiusKm?: number;
+  /** Surface gravity, m/s². */
+  gravity?: number;
+  /** Mean surface / cloud-top temperature, K. */
+  temperatureK?: number;
+  /** Sidereal rotation period, hours. Negative = retrograde. */
+  rotationPeriodHours?: number;
+  /** Sidereal orbital period, Earth days. */
+  orbitalPeriodDays?: number;
+  /** Semi-major axis from primary, in AU (or km for moons). */
+  semiMajorAxisAU?: number;
+  semiMajorAxisKm?: number;
+  /** Mass relative to Earth (1 = Earth). */
+  massEarths?: number;
+  /** Number of known natural satellites. */
+  moonCount?: number;
+  /** Free-form classification (e.g. "G2V", "Terrestrial", "Ice Giant"). */
+  classification?: string;
+}
+
+/**
  * Generic celestial body record. Every field besides id / name / type / radius /
  * rotationPeriod is optional so the same shape covers stars, planets, moons,
  * asteroids and comets without subclassing.
@@ -105,4 +132,6 @@ export interface CelestialBodyData {
   /** Default camera distance = radius * focusDistanceFactor. */
   focusDistanceFactor?: number;
   description?: string;
+  /** Structured scientific metadata (no UI dependency). */
+  science?: ScienceFacts;
 }
