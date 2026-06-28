@@ -328,7 +328,6 @@ const galilean = (
   distance: number,
   period: number,
   color: string,
-  kind: CelestialBodyData["material"] extends infer M ? never : never,
   facts: Partial<CelestialBodyData["science"]>,
 ): CelestialBodyData => ({
   id,
@@ -340,52 +339,32 @@ const galilean = (
   material: { kind: "rock", color },
   focusDistanceFactor: 6,
   science: { classification: "Galilean Moon", ...facts },
-  // unused param to satisfy generic; kept for future per-moon material kinds
-  ...(kind as object),
 });
 
-const IO = galilean("io", "Io", 0.34, 7.4, 42, "#e7d36a", null as never, {
+const IO = galilean("io", "Io", 0.34, 7.4, 42, "#e7d36a", {
   radiusKm: 1_821.6,
   gravity: 1.796,
   temperatureK: 110,
   orbitalPeriodDays: 1.769,
 });
-const EUROPA = galilean("europa", "Europa", 0.3, 9.0, 85, "#dcd4c1", null as never, {
+const EUROPA = galilean("europa", "Europa", 0.3, 9.0, 85, "#dcd4c1", {
   radiusKm: 1_560.8,
   gravity: 1.314,
   temperatureK: 102,
   orbitalPeriodDays: 3.551,
 });
-const GANYMEDE = galilean(
-  "ganymede",
-  "Ganymede",
-  0.5,
-  11.2,
-  170,
-  "#a6957d",
-  null as never,
-  {
-    radiusKm: 2_634.1,
-    gravity: 1.428,
-    temperatureK: 110,
-    orbitalPeriodDays: 7.155,
-  },
-);
-const CALLISTO = galilean(
-  "callisto",
-  "Callisto",
-  0.46,
-  14.5,
-  400,
-  "#6a6258",
-  null as never,
-  {
-    radiusKm: 2_410.3,
-    gravity: 1.235,
-    temperatureK: 134,
-    orbitalPeriodDays: 16.689,
-  },
-);
+const GANYMEDE = galilean("ganymede", "Ganymede", 0.5, 11.2, 170, "#a6957d", {
+  radiusKm: 2_634.1,
+  gravity: 1.428,
+  temperatureK: 110,
+  orbitalPeriodDays: 7.155,
+});
+const CALLISTO = galilean("callisto", "Callisto", 0.46, 14.5, 400, "#6a6258", {
+  radiusKm: 2_410.3,
+  gravity: 1.235,
+  temperatureK: 134,
+  orbitalPeriodDays: 16.689,
+});
 
 const saturnMoon = (
   id: string,
