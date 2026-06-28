@@ -3,7 +3,7 @@ import { Engine } from "../engine/Engine";
 import { WorldScene } from "../world/WorldScene";
 import { TitleScreen } from "../ui/TitleScreen";
 import { LoadingOverlay } from "../ui/LoadingOverlay";
-import { ObjectSelector } from "../ui/ObjectSelector";
+import { ExplorerPanel } from "../ui/ExplorerPanel";
 import { TitleBar } from "../ui/TitleBar";
 
 /**
@@ -35,9 +35,10 @@ export function AyatApp() {
         <WorldScene />
       </Engine>
       <TitleBar visible={exploring} />
-      <ObjectSelector visible={exploring} />
+      <ExplorerPanel visible={exploring} />
       <TitleScreen visible={!loading && !exploring} onBegin={() => setExploring(true)} />
       <LoadingOverlay visible={loading} progress={progress} />
     </div>
   );
 }
+

@@ -4,6 +4,7 @@ import * as THREE from "three";
 import type { CelestialBodyData } from "../types/CelestialBody";
 import { FocusRegistry } from "../state/focus";
 import { PlanetMaterial } from "../materials/PlanetMaterial";
+import { OrbitLine } from "../components/OrbitLine";
 import { useOrbit, useRotation } from "../../sim";
 
 /**
@@ -45,15 +46,26 @@ export function Moon({ data }: { data: CelestialBodyData }) {
   });
 
   return (
-    <group ref={pivotRef} rotation={[inclination, phase, 0]}>
-      <mesh
-        ref={meshRef}
-        position={[distance, 0, 0]}
-        userData={{ focusKey: data.id }}
-      >
-        <sphereGeometry args={[data.radius, 96, 96]} />
-        <PlanetMaterial material={data.material} textures={data.textures} />
-      </mesh>
-    </group>
+    <>
+      {data.orbit && (
+        <OrbitLine
+          radius={distance}
+          inclination={data.orbit.inclination}
+          color="#cfd8e8"
+          opacity={0.1}
+          segments={128}
+        />
+      )}
+      <group ref={pivotRef} rotation={[inclination, phase, 0]}>
+        <mesh
+          ref={meshRef}
+          position={[distance, 0, 0]}
+          userData={{ focusKey: data.id }}
+        >
+          <sphereGeometry args={[data.radius, 64, 64]} />
+          <PlanetMaterial material={data.material} textures={data.textures} />
+        </mesh>
+      </group>
+    </>
   );
 }
