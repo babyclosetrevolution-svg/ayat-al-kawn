@@ -73,7 +73,15 @@ class UIStateImpl {
 
   open(id: PanelId) {
     if (this.snap.panels[id] === "open") return;
-    this.snap.panels = { ...this.snap.panels, [id]: "open" };
+    // Mutual exclusion — opening one drawer collapses any other unpinned
+    // drawer so they never compete for screen space (mobile especially).
+    const nextPanels = { ...this.snap.panels, [id]: "open" as PanelState };
+    for (const other of Object.keys(nextPanels) as PanelId[]) {
+      if (other !== id && !this.snap.pinned[other]) {
+        nextPanels[other] = "closed";
+      }
+    }
+    this.snap.panels = nextPanels;
     this.emit();
   }
 

@@ -22,6 +22,26 @@ import { smoothK } from "../../lib/motion";
  * and the Director independently testable.
  */
 
+/**
+ * Adapts framing distance to viewport so the entire body fits comfortably
+ * even on phones and landscape phones. Returns a multiplier applied to the
+ * preset's distanceFactor on focus change.
+ */
+function viewportScale(): number {
+  if (typeof window === "undefined") return 1;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const small = Math.min(w, h);
+  // Mobile phones (~<768px shortest side) need ~35% more room; tablets ~15%.
+  let s = 1;
+  if (small < 480) s = 1.45;
+  else if (small < 768) s = 1.25;
+  else if (small < 1100) s = 1.1;
+  // Landscape phones have very low vertical room — pull back further.
+  if (h < 500) s *= 1.15;
+  return s;
+}
+
 export interface DirectorUpdate {
   targetPos: THREE.Vector3;
   cameraPos: THREE.Vector3;
@@ -98,8 +118,9 @@ class CameraDirectorImpl {
         .set(this.activePreset.offset, this.activePreset.elevation, 1)
         .normalize();
     }
-    this.offsetLen = rec.distance * this.activePreset.distanceFactor;
+    this.offsetLen = rec.distance * this.activePreset.distanceFactor * viewportScale();
   }
+
 
   /** Per-frame update. Returns the smoothed pose for application by the caller. */
   update(camera: THREE.PerspectiveCamera, delta: number): DirectorUpdate {
@@ -153,6 +174,23 @@ class CameraDirectorImpl {
 
     this.currentTarget.lerp(this.desiredTarget, kTarget);
     this.currentCamera.lerp(this.desiredCamera, kCam);
+
+    // Collision floor — never let the camera punch through the focused body.
+    // The minimum safe distance is a fraction of the suggested distance,
+    // which itself encodes the body's radius.
+    if (rec) {
+      const minSafe = rec.distance * 0.55;
+      const toCam = new THREE.Vector3().subVectors(
+        this.currentCamera,
+        this.currentTarget,
+      );
+      const len = toCam.length();
+      if (len < minSafe && len > 1e-5) {
+        toCam.multiplyScalar(minSafe / len);
+        this.currentCamera.copy(this.currentTarget).add(toCam);
+      }
+    }
+
 
     // Smooth FOV blending — slight widening during long travel so the
     // sense of speed reads even in deep space.
