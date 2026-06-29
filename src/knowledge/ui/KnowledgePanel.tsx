@@ -17,6 +17,7 @@ import {
   StatGrid,
 } from "../components/blocks";
 import { DiscoveryView, HistoryStore } from "../../discovery";
+import { ScienceExploreView, ExperienceRegistry } from "../../science";
 
 /**
  * KnowledgePanel — scientific journal for the active body.
@@ -28,15 +29,17 @@ import { DiscoveryView, HistoryStore } from "../../discovery";
  *    returns the user to fullscreen exploration on close.
  */
 
-type TabId = "overview" | "discover" | "science" | "exploration" | "references";
+type TabId = "overview" | "discover" | "explore" | "science" | "exploration" | "references";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "overview", label: "Overview" },
   { id: "discover", label: "Discover" },
+  { id: "explore", label: "Explore" },
   { id: "science", label: "Science" },
-  { id: "exploration", label: "Exploration" },
+  { id: "exploration", label: "Missions" },
   { id: "references", label: "References" },
 ];
+
 
 export function KnowledgePanel({ visible }: { visible: boolean }) {
   const { id, entry } = useActiveKnowledge();
