@@ -18,6 +18,8 @@ import {
 } from "../components/blocks";
 import { DiscoveryView, HistoryStore } from "../../discovery";
 import { ScienceExploreView, ExperienceRegistry } from "../../science";
+import { ComparisonState } from "../../scale";
+
 
 /**
  * KnowledgePanel — scientific journal for the active body.
