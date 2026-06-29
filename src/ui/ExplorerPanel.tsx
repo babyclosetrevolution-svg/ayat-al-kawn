@@ -12,11 +12,15 @@ import type { CelestialBodyData } from "../world/types/CelestialBody";
  */
 type Group = { id: string; label: string; items: CelestialBodyData[] };
 
-function groupBodies(bodies: CelestialBodyData[]): Group[] {
+function groupBodies(
+  bodies: CelestialBodyData[],
+  stars: CelestialBodyData[],
+): Group[] {
   return [
-    { id: "star", label: "Star", items: bodies.filter((b) => b.type === "star") },
+    { id: "star", label: "Local Star", items: bodies.filter((b) => b.type === "star") },
     { id: "planets", label: "Planets", items: bodies.filter((b) => b.type === "planet") },
     { id: "moons", label: "Moons", items: bodies.filter((b) => b.type === "moon") },
+    { id: "stars", label: "Stars", items: stars },
   ].filter((g) => g.items.length > 0);
 }
 
