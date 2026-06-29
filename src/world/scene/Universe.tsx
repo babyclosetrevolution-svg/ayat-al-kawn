@@ -47,10 +47,15 @@ export function Universe() {
         if (!cancelled) setStars(b);
       });
     }
+    if (!deepSky) {
+      CatalogManager.load("deep-sky").then((b) => {
+        if (!cancelled) setDeepSky(b);
+      });
+    }
     return () => {
       cancelled = true;
     };
-  }, [bodies, stars]);
+  }, [bodies, stars, deepSky]);
 
   // Register default partition nodes once.
   useEffect(() => {
