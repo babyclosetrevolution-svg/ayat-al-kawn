@@ -54,6 +54,8 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
   useEffect(() => {
     if (!entry) return;
     setTab("overview");
+    // Record the visit in discovery history — every new selection counts.
+    if (id) HistoryStore.visit({ id, title: entry.title });
     if (firstRender.current) {
       firstRender.current = false;
       return;
