@@ -287,9 +287,12 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
   );
 
   // ========================== layered rendering ==========================
+  if (!visible) return null;
   return (
     <>
       {launcher}
+
+
 
       {/* Backdrop — clicking outside collapses the panel. */}
       <div
