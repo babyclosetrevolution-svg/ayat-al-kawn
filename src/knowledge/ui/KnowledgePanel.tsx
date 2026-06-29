@@ -18,6 +18,8 @@ import {
 } from "../components/blocks";
 import { DiscoveryView, HistoryStore } from "../../discovery";
 import { ScienceExploreView, ExperienceRegistry } from "../../science";
+import { ComparisonState } from "../../scale";
+
 
 /**
  * KnowledgePanel — scientific journal for the active body.
@@ -85,16 +87,14 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
 
   const launcherOpacity = ui.activity === "cinematic" ? "opacity-0" : "opacity-100";
 
-  // Phase-13 entry point — comparison view is not implemented yet, so we
-  // simply surface the intent. The handler stays here so future wiring is
-  // a single-file change.
-  const notifyCompare = (otherId: string) => {
-    import("sonner").then(({ toast }) =>
-      toast("Comparison view ships in Phase 13", {
-        description: `Selected: ${entry?.title} ↔ ${otherId}`,
-      }),
-    );
+  // Open the Cosmic Scale overlay with the active body + the suggestion's
+  // target. Wired into Discovery cards via `onCompareRequest` and into the
+  // panel header via the Compare action.
+  const openComparison = (otherId: string) => {
+    if (!id) return;
+    ComparisonState.openWith(id === otherId ? [id] : [id, otherId]);
   };
+
 
   // ============================== launcher ==============================
   const launcher = (
@@ -133,6 +133,16 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
           eyebrow={entry.category}
         />
         <div className="flex shrink-0 items-center gap-1.5 pt-7">
+          {id && (
+            <button
+              type="button"
+              onClick={() => ComparisonState.openWith([id])}
+              aria-label="Compare on cosmic scale"
+              className="rounded-full px-2.5 py-1 text-[0.55rem] uppercase tracking-[0.3em] text-white/55 outline-none transition-colors hover:text-sky-200 focus-visible:ring-1 focus-visible:ring-white/40"
+            >
+              Compare
+            </button>
+          )}
           {!isMobile && (
             <button
               type="button"
@@ -148,6 +158,7 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
               {pinned ? "Pinned" : "Pin"}
             </button>
           )}
+
           <button
             type="button"
             onClick={() => UIState.close("knowledge", { force: true })}
@@ -163,7 +174,7 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
 
       <article className="min-h-0 flex-1 overflow-y-auto px-1 pb-10 [scrollbar-width:thin]">
         {tab === "overview" && <OverviewTab entry={entry} />}
-        {tab === "discover" && <DiscoveryView onCompareRequest={notifyCompare} />}
+        {tab === "discover" && <DiscoveryView onCompareRequest={openComparison} />}
         {tab === "explore" && <ScienceExploreView bodyId={id} />}
         {tab === "science" && <ScienceTab entry={entry} />}
         {tab === "exploration" && <ExplorationTab entry={entry} />}
