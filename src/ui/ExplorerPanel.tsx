@@ -28,6 +28,9 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
   const [bodies, setBodies] = useState<CelestialBodyData[]>(
     () => CatalogManager.get("solar-system") ?? [],
   );
+  const [stars, setStars] = useState<CelestialBodyData[]>(
+    () => CatalogManager.get("stars") ?? [],
+  );
   const [active, setActive] = useState<FocusKey>(FocusRegistry.getActive());
   const [open, setOpen] = useState(true);
   const [orbits, setOrbits] = useState(VisibilityRegistry.get("orbits"));
@@ -40,7 +43,10 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
     if (bodies.length === 0) {
       CatalogManager.load("solar-system").then(setBodies);
     }
-  }, [bodies.length]);
+    if (stars.length === 0) {
+      CatalogManager.load("stars").then(setStars);
+    }
+  }, [bodies.length, stars.length]);
 
   useEffect(() => FocusRegistry.subscribe(setActive), []);
   useEffect(
@@ -56,7 +62,7 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
     });
   }, [active]);
 
-  const groups = useMemo(() => groupBodies(bodies), [bodies]);
+  const groups = useMemo(() => groupBodies(bodies, stars), [bodies, stars]);
   const flat = useMemo(
     () =>
       groups.flatMap((g) =>
