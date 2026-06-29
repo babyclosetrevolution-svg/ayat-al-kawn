@@ -213,7 +213,7 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
 
       <div
         ref={listRef}
-        className="flex-1 space-y-4 overflow-y-auto px-3 pb-4 [scrollbar-width:thin]"
+        className="min-h-0 flex-1 space-y-4 overflow-y-auto px-3 pb-4 [scrollbar-width:thin]"
       >
         {groups.map((g) => {
           const isCollapsed = collapsed[g.id];
@@ -324,7 +324,7 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
           role="dialog"
           aria-label="Explorer"
           aria-hidden={!open}
-          className={`fixed left-3 top-1/2 z-40 -translate-y-1/2 ${GLASS_SURFACE} flex h-[78vh] w-[280px] flex-col overflow-hidden transition-all duration-500 ease-out ${
+          className={`fixed left-3 top-1/2 z-40 -translate-y-1/2 ${GLASS_SURFACE} flex h-[min(78dvh,720px)] max-h-[calc(100dvh-1.5rem)] w-[280px] flex-col overflow-hidden transition-all duration-500 ease-out ${
             open
               ? "translate-x-0 opacity-100"
               : "pointer-events-none -translate-x-6 opacity-0"
