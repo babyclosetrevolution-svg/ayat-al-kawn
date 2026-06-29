@@ -48,6 +48,8 @@ export function AyatApp() {
       <LoadingOverlay visible={loading} progress={progress} />
       <MetricsOverlay />
       <ComparisonOverlay />
+      <ObservatoryRoot />
+      {exploring && <ModeSwitcher />}
       <Toaster />
 
     </div>
