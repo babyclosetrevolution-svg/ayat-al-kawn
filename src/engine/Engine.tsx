@@ -6,6 +6,8 @@ import { CameraSystem } from "./CameraSystem";
 import { LightingSystem } from "./LightingSystem";
 import { SimulationClock } from "../sim";
 import { PostFX, RENDER_CONFIG } from "../render";
+import { CameraStreamingBridge } from "../streaming";
+import { FrameSampler } from "../metrics";
 
 interface EngineProps {
   children: ReactNode;
@@ -43,6 +45,8 @@ export function Engine({ children, fallback = null }: EngineProps) {
         <LightingSystem />
         <CameraSystem />
         {children}
+        <CameraStreamingBridge />
+        <FrameSampler />
         <PostFX />
       </Suspense>
     </Canvas>
