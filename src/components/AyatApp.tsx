@@ -8,7 +8,9 @@ import { TitleBar } from "../ui/TitleBar";
 import { KnowledgePanel } from "../knowledge";
 import { MetricsOverlay } from "../metrics";
 import { Toaster } from "../components/ui/sonner";
+import { ComparisonOverlay } from "../scale";
 import "../discovery";
+
 
 /**
  * AyatApp — client-only composition root.
@@ -44,7 +46,9 @@ export function AyatApp() {
       <TitleScreen visible={!loading && !exploring} onBegin={() => setExploring(true)} />
       <LoadingOverlay visible={loading} progress={progress} />
       <MetricsOverlay />
+      <ComparisonOverlay />
       <Toaster />
+
     </div>
   );
 }
