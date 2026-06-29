@@ -5,7 +5,18 @@ import type { Vector3Tuple } from "three";
  * Rendering components (Star, Planet, Moon) are pure visualizers of this shape;
  * adding a new world should be a data change, not a new component.
  */
-export type BodyType = "star" | "planet" | "moon" | "asteroid" | "comet";
+export type BodyType =
+  | "star"
+  | "planet"
+  | "moon"
+  | "asteroid"
+  | "comet"
+  | "galaxy"
+  | "nebula"
+  | "star-cluster"
+  | "globular-cluster"
+  | "open-cluster"
+  | "supernova-remnant";
 
 export type MaterialKind =
   | "rock"
