@@ -5,6 +5,7 @@ import { ENGINE_CONFIG } from "../core/config";
 import { CameraSystem } from "./CameraSystem";
 import { LightingSystem } from "./LightingSystem";
 import { SimulationClock } from "../sim";
+import { PostFX, RENDER_CONFIG } from "../render";
 
 interface EngineProps {
   children: ReactNode;
@@ -13,8 +14,8 @@ interface EngineProps {
 
 /**
  * Engine — root R3F surface.
- * Owns renderer config, color management, camera and lighting systems.
- * Worlds and UI overlays mount inside.
+ * Owns renderer config, color management, camera, lighting, and the
+ * centralized post-processing stack.
  */
 export function Engine({ children, fallback = null }: EngineProps) {
   return (
@@ -24,6 +25,7 @@ export function Engine({ children, fallback = null }: EngineProps) {
         antialias: ENGINE_CONFIG.renderer.antialias,
         powerPreference: ENGINE_CONFIG.renderer.powerPreference,
         toneMapping: THREE.ACESFilmicToneMapping,
+        toneMappingExposure: RENDER_CONFIG.exposure.base,
       }}
       camera={{
         fov: ENGINE_CONFIG.camera.fov,
@@ -41,6 +43,7 @@ export function Engine({ children, fallback = null }: EngineProps) {
         <LightingSystem />
         <CameraSystem />
         {children}
+        <PostFX />
       </Suspense>
     </Canvas>
   );

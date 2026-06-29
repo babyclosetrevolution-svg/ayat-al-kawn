@@ -104,7 +104,13 @@ export function Planet({ data, moons = [], starPosition }: Props) {
               sunPosition={starPosition}
             />
           )}
-          {data.rings && <RingLayer rings={data.rings} />}
+          {data.rings && (
+            <RingLayer
+              rings={data.rings}
+              planetRadius={data.radius}
+              sunPosition={starPosition}
+            />
+          )}
           {moons.map((m) => (
             <Moon key={m.id} data={m} />
           ))}
