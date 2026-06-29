@@ -239,16 +239,19 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
 function TabBar({
   tab,
   setTab,
+  tabs,
 }: {
   tab: TabId;
   setTab: (t: TabId) => void;
+  tabs: { id: TabId; label: string }[];
 }) {
   return (
     <div
       role="tablist"
       className="flex gap-1 overflow-x-auto border-b border-white/8 px-5 pb-3"
     >
-      {TABS.map((t) => {
+      {tabs.map((t) => {
+
         const active = t.id === tab;
         return (
           <button
