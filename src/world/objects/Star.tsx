@@ -50,6 +50,10 @@ export function Star({ data }: { data: CelestialBodyData }) {
 
   const e = data.emissive;
 
+  // Science Engine — solar activity & corona visibility.
+  const [activity] = useScienceParam(`${data.id}.activity`, 1);
+  const [coronaVisible] = useScienceParam(`${data.id}.coronaVisible`, true);
+
   return (
     <group position={pos}>
       {e?.lightColor && (
@@ -68,11 +72,14 @@ export function Star({ data }: { data: CelestialBodyData }) {
           rimColor={colors.rim}
         />
       </mesh>
-      <SolarCorona
-        radius={data.radius}
-        color={e?.color ?? colors.rim}
-        intensityScale={Math.max(0.4, luminosityScale)}
-      />
+      {coronaVisible && (
+        <SolarCorona
+          radius={data.radius}
+          color={e?.color ?? colors.rim}
+          intensityScale={Math.max(0.4, luminosityScale) * activity}
+        />
+      )}
+
       {e?.halos?.map((h, i) => (
         <mesh key={i} scale={h.scale}>
           <sphereGeometry args={[data.radius, 48, 48]} />
