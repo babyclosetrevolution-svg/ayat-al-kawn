@@ -17,6 +17,7 @@ import {
   StatGrid,
 } from "../components/blocks";
 import { DiscoveryView, HistoryStore } from "../../discovery";
+import { ScienceExploreView, ExperienceRegistry } from "../../science";
 
 /**
  * KnowledgePanel — scientific journal for the active body.
@@ -28,15 +29,17 @@ import { DiscoveryView, HistoryStore } from "../../discovery";
  *    returns the user to fullscreen exploration on close.
  */
 
-type TabId = "overview" | "discover" | "science" | "exploration" | "references";
+type TabId = "overview" | "discover" | "explore" | "science" | "exploration" | "references";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "overview", label: "Overview" },
   { id: "discover", label: "Discover" },
+  { id: "explore", label: "Explore" },
   { id: "science", label: "Science" },
-  { id: "exploration", label: "Exploration" },
+  { id: "exploration", label: "Missions" },
   { id: "references", label: "References" },
 ];
+
 
 export function KnowledgePanel({ visible }: { visible: boolean }) {
   const { id, entry } = useActiveKnowledge();
@@ -45,6 +48,14 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
   const open = ui.panels.knowledge === "open";
   const pinned = ui.pinned.knowledge;
   const [tab, setTab] = useState<TabId>("overview");
+  // Hide the Explore tab for bodies that have no registered experiences.
+  const hasExperiences = ExperienceRegistry.hasAny(id);
+  const availableTabs = TABS.filter((t) => t.id !== "explore" || hasExperiences);
+  // If the user is on a now-unavailable tab, fall back to Overview.
+  useEffect(() => {
+    if (!availableTabs.some((t) => t.id === tab)) setTab("overview");
+  }, [tab, availableTabs]);
+
   const firstRender = useRef(true);
 
   // New selection — surface the panel automatically on desktop (unless the
@@ -148,15 +159,17 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
         </div>
       </div>
 
-      <TabBar tab={tab} setTab={setTab} />
+      <TabBar tab={tab} setTab={setTab} tabs={availableTabs} />
 
       <article className="min-h-0 flex-1 overflow-y-auto px-1 pb-10 [scrollbar-width:thin]">
         {tab === "overview" && <OverviewTab entry={entry} />}
         {tab === "discover" && <DiscoveryView onCompareRequest={notifyCompare} />}
+        {tab === "explore" && <ScienceExploreView bodyId={id} />}
         {tab === "science" && <ScienceTab entry={entry} />}
         {tab === "exploration" && <ExplorationTab entry={entry} />}
         {tab === "references" && <ReferencesTab entry={entry} />}
       </article>
+
     </div>
   ) : (
     <EmptyState
@@ -226,16 +239,19 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
 function TabBar({
   tab,
   setTab,
+  tabs,
 }: {
   tab: TabId;
   setTab: (t: TabId) => void;
+  tabs: { id: TabId; label: string }[];
 }) {
   return (
     <div
       role="tablist"
       className="flex gap-1 overflow-x-auto border-b border-white/8 px-5 pb-3"
     >
-      {TABS.map((t) => {
+      {tabs.map((t) => {
+
         const active = t.id === tab;
         return (
           <button

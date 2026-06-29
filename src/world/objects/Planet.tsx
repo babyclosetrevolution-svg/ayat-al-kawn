@@ -10,6 +10,8 @@ import { RingLayer } from "../components/RingLayer";
 import { OrbitLine } from "../components/OrbitLine";
 import { Moon } from "./Moon";
 import { useOrbit, useRotation } from "../../sim";
+import { useScienceParam } from "../../science/hooks/useScienceParam";
+
 
 /**
  * Planet — generic solid body. Supports two placement modes:
@@ -59,7 +61,19 @@ export function Planet({ data, moons = [], starPosition }: Props) {
     enabled: hasOrbit,
   });
 
-  useRotation(meshRef, { period: data.rotationPeriod });
+  // Science Engine — live multipliers and toggles per body. Defaults keep
+  // the simulation unchanged when the user never opens the Explore tab.
+  const [rotSpeed] = useScienceParam(`${data.id}.rotationSpeed`, 1);
+  const [atmoIntensity] = useScienceParam(`${data.id}.atmosphereIntensity`, 1);
+  const [cloudsVisible] = useScienceParam(`${data.id}.cloudsVisible`, true);
+  const [ringsVisible] = useScienceParam(`${data.id}.ringsVisible`, true);
+  const [ringTiltDeg] = useScienceParam(`${data.id}.ringTiltOffset`, 0);
+
+  const effectiveRotationPeriod =
+    rotSpeed > 0 ? data.rotationPeriod / rotSpeed : Number.POSITIVE_INFINITY;
+
+  useRotation(meshRef, { period: effectiveRotationPeriod, enabled: rotSpeed > 0 });
+
 
   // Publish live world-space position to the camera focus registry.
   useFrame(() => {
@@ -96,12 +110,19 @@ export function Planet({ data, moons = [], starPosition }: Props) {
             <sphereGeometry args={[data.radius, 96, 96]} />
             <PlanetMaterial material={data.material} textures={data.textures} />
           </mesh>
-          {data.clouds && <CloudLayer radius={data.radius} clouds={data.clouds} />}
+          {data.clouds && (
+            <CloudLayer
+              radius={data.radius}
+              clouds={data.clouds}
+              visible={cloudsVisible}
+            />
+          )}
           {data.atmosphere && (
             <AtmosphereLayer
               radius={data.radius}
               atmosphere={data.atmosphere}
               sunPosition={starPosition}
+              intensityMultiplier={atmoIntensity}
             />
           )}
           {data.rings && (
@@ -109,8 +130,11 @@ export function Planet({ data, moons = [], starPosition }: Props) {
               rings={data.rings}
               planetRadius={data.radius}
               sunPosition={starPosition}
+              visible={ringsVisible}
+              tiltOffset={(ringTiltDeg * Math.PI) / 180}
             />
           )}
+
           {moons.map((m) => (
             <Moon key={m.id} data={m} />
           ))}
