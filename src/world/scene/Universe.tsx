@@ -10,6 +10,8 @@ import { Region } from "./Region";
 import { SolarSystem } from "./SolarSystem";
 import { StellarNeighborhood } from "./StellarNeighborhood";
 import { MilkyWayScene } from "./MilkyWayScene";
+import { DeepSkyScene } from "./DeepSkyScene";
+import type { DeepSkyBodyData } from "../../data/deep-sky";
 
 /**
  * Universe — root of the astronomical scene graph.
@@ -29,6 +31,9 @@ export function Universe() {
   const [stars, setStars] = useState<CelestialBodyData[] | null>(
     CatalogManager.get("stars") ?? null,
   );
+  const [deepSky, setDeepSky] = useState<DeepSkyBodyData[] | null>(
+    CatalogManager.get("deep-sky") ?? null,
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -42,10 +47,15 @@ export function Universe() {
         if (!cancelled) setStars(b);
       });
     }
+    if (!deepSky) {
+      CatalogManager.load("deep-sky").then((b) => {
+        if (!cancelled) setDeepSky(b);
+      });
+    }
     return () => {
       cancelled = true;
     };
-  }, [bodies, stars]);
+  }, [bodies, stars, deepSky]);
 
   // Register default partition nodes once.
   useEffect(() => {
@@ -81,28 +91,6 @@ export function Universe() {
     StreamingManager.registerRegion(neighborhood);
   }, []);
 
-  // Register every Deep Sky body with the FocusRegistry so the camera,
-  // knowledge, discovery and comparison engines pick them up — no extra
-  // rendering required for this phase.
-  useEffect(() => {
-    let cancelled = false;
-    import("../state/focus").then(({ FocusRegistry }) => {
-      CatalogManager.load("deep-sky").then((items) => {
-        if (cancelled) return;
-        for (const b of items) {
-          const [x, y, z] = b.position ?? [0, 0, 0];
-          FocusRegistry.register(b.id, {
-            position: new THREE.Vector3(x, y, z),
-            distance: b.radius * (b.focusDistanceFactor ?? 4),
-          });
-        }
-      });
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   // Reflect catalog load count into metrics overlay.
   useEffect(() => {
     const update = () =>
@@ -118,6 +106,7 @@ export function Universe() {
         <Region>
           {bodies && <SolarSystem bodies={bodies} />}
           {stars && <StellarNeighborhood stars={stars} />}
+          {deepSky && <DeepSkyScene items={deepSky} />}
         </Region>
       </Sector>
     </Galaxy>
