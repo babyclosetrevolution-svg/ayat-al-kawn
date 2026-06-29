@@ -75,7 +75,12 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
     <div
       className={`pointer-events-none fixed z-30 transition-opacity duration-500 ease-out ${
         visible && entry && !open ? launcherOpacity : "opacity-0"
-      } ${isMobile ? "bottom-6 right-5" : "right-5 top-1/2 -translate-y-1/2"}`}
+      } ${isMobile ? "right-5" : "right-5 top-1/2 -translate-y-1/2"}`}
+      style={
+        isMobile
+          ? { bottom: "calc(1.25rem + env(safe-area-inset-bottom, 0px))" }
+          : undefined
+      }
       aria-hidden={!visible || open}
     >
       <div className="pointer-events-auto">
@@ -90,6 +95,7 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
       </div>
     </div>
   );
+
 
   // =============================== body ================================
   const journal = entry ? (
