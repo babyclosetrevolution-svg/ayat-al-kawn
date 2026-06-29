@@ -10,6 +10,10 @@ import { MetricsOverlay } from "../metrics";
 import { Toaster } from "../components/ui/sonner";
 import { ComparisonOverlay } from "../scale";
 import { ObservatoryRoot, ModeSwitcher } from "../observatory";
+import { AudioBridge, AudioSettingsPanel } from "../audio";
+import { JourneyPicker, JourneyPlayer } from "../journeys";
+import { AssistantPanel } from "../assistant";
+import { ContemplationLauncher, ContemplationOverlay } from "../contemplation";
 import "../discovery";
 import "../exploration";
 import "../encyclopedia/seed";
@@ -43,6 +47,7 @@ export function AyatApp() {
       <Engine>
         <WorldScene />
       </Engine>
+      <AudioBridge />
       <TitleBar visible={exploring} />
       <ExplorerPanel visible={exploring} />
       <KnowledgePanel visible={exploring} />
@@ -51,7 +56,17 @@ export function AyatApp() {
       <MetricsOverlay />
       <ComparisonOverlay />
       <ObservatoryRoot />
-      {exploring && <ModeSwitcher />}
+      {exploring && (
+        <>
+          <ModeSwitcher />
+          <JourneyPicker />
+          <JourneyPlayer />
+          <AssistantPanel />
+          <ContemplationLauncher />
+          <ContemplationOverlay />
+          <AudioSettingsPanel />
+        </>
+      )}
       <Toaster />
 
     </div>
