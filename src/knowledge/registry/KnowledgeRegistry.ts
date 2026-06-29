@@ -39,5 +39,6 @@ class KnowledgeRegistryImpl {
 
 export const KnowledgeRegistry = new KnowledgeRegistryImpl();
 
-// Default registrations — Solar System bodies.
+// Default registrations.
 KnowledgeRegistry.registerMany(SOLAR_SYSTEM_KNOWLEDGE);
+KnowledgeRegistry.registerMany(STELLAR_KNOWLEDGE);
