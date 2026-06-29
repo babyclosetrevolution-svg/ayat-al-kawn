@@ -1,5 +1,5 @@
 import { DiscoveryGraph } from "../registry/graph";
-import type { EntityId } from "../types";
+import type { EntityId, Relation } from "../types";
 import { titleOf } from "./resolver";
 
 export interface Crumb {
