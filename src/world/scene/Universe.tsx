@@ -91,6 +91,7 @@ export function Universe() {
 
   return (
     <Galaxy>
+      <MilkyWayScene />
       <Sector>
         <Region>
           {bodies && <SolarSystem bodies={bodies} />}

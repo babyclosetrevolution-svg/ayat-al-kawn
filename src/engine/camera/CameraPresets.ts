@@ -69,15 +69,31 @@ const SOLAR_SYSTEM: CameraPreset = {
   breathing: 0.016,
 };
 
+const GALAXY: CameraPreset = {
+  id: "galaxy",
+  distanceFactor: 1,
+  fov: 65,
+  elevation: 0.55,
+  offset: 0.6,
+  transitionRate: 0.55,
+  idleDrift: 0.002,
+  breathing: 0.012,
+};
+
 export const CAMERA_PRESETS = {
   planet: PLANET,
   moon: MOON,
   star: STAR,
   solarSystem: SOLAR_SYSTEM,
+  galaxy: GALAXY,
 } as const;
 
-export function pickPreset(type: BodyType | undefined): CameraPreset {
+export type BroadBodyKind = BodyType | "galaxy";
+
+export function pickPreset(type: BroadBodyKind | undefined): CameraPreset {
   switch (type) {
+    case "galaxy":
+      return GALAXY;
     case "star":
       return STAR;
     case "moon":
