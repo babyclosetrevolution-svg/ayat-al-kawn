@@ -74,6 +74,9 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
   const [galaxies, setGalaxies] = useState<GalaxyData[]>(
     () => CatalogManager.get("galaxies") ?? [],
   );
+  const [deepSky, setDeepSky] = useState<DeepSkyBodyData[]>(
+    () => CatalogManager.get("deep-sky") ?? [],
+  );
   const [active, setActive] = useState<FocusKey>(FocusRegistry.getActive());
   const [orbits, setOrbits] = useState(VisibilityRegistry.get("orbits"));
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
