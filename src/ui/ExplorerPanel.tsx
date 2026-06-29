@@ -4,6 +4,7 @@ import { VisibilityRegistry } from "../world/state/visibility";
 import { CatalogManager } from "../sim";
 import type { CelestialBodyData } from "../world/types/CelestialBody";
 import type { GalaxyData } from "../data/galaxy/milky-way";
+import type { DeepSkyBodyData, DeepSkyKind } from "../data/deep-sky";
 import { useIsMobile } from "../hooks/use-mobile";
 import { UIState } from "./state/uiState";
 import { useUIState } from "./hooks/useUIState";
@@ -27,18 +28,35 @@ import { GlassIconButton } from "./components/GlassIconButton";
 type GroupItem = { id: string; name: string };
 type Group = { id: string; label: string; items: GroupItem[] };
 
+const DEEP_SKY_GROUPS: { kind: DeepSkyKind; label: string }[] = [
+  { kind: "galaxy", label: "Deep Sky · Galaxies" },
+  { kind: "nebula", label: "Deep Sky · Nebulae" },
+  { kind: "open-cluster", label: "Deep Sky · Open Clusters" },
+  { kind: "globular-cluster", label: "Deep Sky · Globular Clusters" },
+  { kind: "star-cluster", label: "Deep Sky · Star Clusters" },
+  { kind: "supernova-remnant", label: "Deep Sky · Supernova Remnants" },
+];
+
 function groupBodies(
   bodies: CelestialBodyData[],
   stars: CelestialBodyData[],
   galaxies: GalaxyData[],
+  deepSky: DeepSkyBodyData[],
 ): Group[] {
-  return [
+  const groups: Group[] = [
     { id: "galaxy", label: "Galaxy", items: galaxies.map((g) => ({ id: g.id, name: g.name })) },
     { id: "star", label: "Local Star", items: bodies.filter((b) => b.type === "star") },
     { id: "planets", label: "Planets", items: bodies.filter((b) => b.type === "planet") },
     { id: "moons", label: "Moons", items: bodies.filter((b) => b.type === "moon") },
     { id: "stars", label: "Stars", items: stars },
-  ].filter((g) => g.items.length > 0);
+  ];
+  for (const g of DEEP_SKY_GROUPS) {
+    const items = deepSky.filter((b) => b.deepSky.kind === g.kind);
+    if (items.length > 0) {
+      groups.push({ id: `deep-sky-${g.kind}`, label: g.label, items });
+    }
+  }
+  return groups.filter((g) => g.items.length > 0);
 }
 
 export function ExplorerPanel({ visible }: { visible: boolean }) {
