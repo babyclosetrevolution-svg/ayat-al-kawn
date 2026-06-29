@@ -139,3 +139,33 @@ DiscoveryGraph.link("sun", "proxima-centauri", "neighbor", {
 });
 DiscoveryGraph.link("sun", "topic:main-sequence", "category");
 DiscoveryGraph.link("earth", "moon", "satellite", { reverseKind: "parent" });
+
+// ── Deep Sky ─────────────────────────────────────────────────────────────
+import { DEEP_SKY_CATALOG, DEEP_SKY_BY_KIND } from "../../data/deep-sky";
+
+const KIND_TOPIC: Record<string, EntityId> = {
+  "galaxy": "topic:galactic-structure",
+  "nebula": "topic:nebulae",
+  "open-cluster": "topic:star-clusters",
+  "globular-cluster": "topic:star-clusters",
+  "star-cluster": "topic:star-clusters",
+  "supernova-remnant": "topic:stellar-death",
+};
+
+for (const b of DEEP_SKY_CATALOG) {
+  DiscoveryGraph.add({ from: b.id, to: "topic:deep-sky", kind: "category" });
+  const t = KIND_TOPIC[b.deepSky.kind];
+  if (t) DiscoveryGraph.add({ from: b.id, to: t, kind: "topic" });
+  DiscoveryGraph.add({ from: b.id, to: "topic:scale", kind: "topic" });
+}
+// Same-kind families.
+for (const family of Object.values(DEEP_SKY_BY_KIND)) {
+  const ids = family.map((b) => b.id);
+  for (const a of ids) for (const c of ids) if (a !== c) {
+    DiscoveryGraph.add({ from: a, to: c, kind: "similar", weight: 1 });
+  }
+}
+// Milky Way ↔ Local Group neighbors.
+for (const id of ["andromeda", "triangulum", "lmc", "smc"]) {
+  DiscoveryGraph.link("milky-way", id, "neighbor", { reason: "Local Group member." });
+}
