@@ -122,8 +122,8 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
   }, [open]);
 
   const groups = useMemo(
-    () => groupBodies(bodies, stars, galaxies),
-    [bodies, stars, galaxies],
+    () => groupBodies(bodies, stars, galaxies, deepSky),
+    [bodies, stars, galaxies, deepSky],
   );
   const flat = useMemo(
     () =>
