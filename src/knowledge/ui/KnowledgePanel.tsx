@@ -74,6 +74,17 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
 
   const launcherOpacity = ui.activity === "cinematic" ? "opacity-0" : "opacity-100";
 
+  // Phase-13 entry point — comparison view is not implemented yet, so we
+  // simply surface the intent. The handler stays here so future wiring is
+  // a single-file change.
+  const notifyCompare = (otherId: string) => {
+    import("sonner").then(({ toast }) =>
+      toast("Comparison view ships in Phase 13", {
+        description: `Selected: ${entry?.title} ↔ ${otherId}`,
+      }),
+    );
+  };
+
   // ============================== launcher ==============================
   const launcher = (
     <div
