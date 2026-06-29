@@ -22,6 +22,26 @@ import { smoothK } from "../../lib/motion";
  * and the Director independently testable.
  */
 
+/**
+ * Adapts framing distance to viewport so the entire body fits comfortably
+ * even on phones and landscape phones. Returns a multiplier applied to the
+ * preset's distanceFactor on focus change.
+ */
+function viewportScale(): number {
+  if (typeof window === "undefined") return 1;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const small = Math.min(w, h);
+  // Mobile phones (~<768px shortest side) need ~35% more room; tablets ~15%.
+  let s = 1;
+  if (small < 480) s = 1.45;
+  else if (small < 768) s = 1.25;
+  else if (small < 1100) s = 1.1;
+  // Landscape phones have very low vertical room — pull back further.
+  if (h < 500) s *= 1.15;
+  return s;
+}
+
 export interface DirectorUpdate {
   targetPos: THREE.Vector3;
   cameraPos: THREE.Vector3;
