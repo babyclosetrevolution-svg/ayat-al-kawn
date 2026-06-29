@@ -16,6 +16,7 @@ import {
   SectionCard,
   StatGrid,
 } from "../components/blocks";
+import { DiscoveryView, HistoryStore } from "../../discovery";
 
 /**
  * KnowledgePanel — scientific journal for the active body.
@@ -27,10 +28,11 @@ import {
  *    returns the user to fullscreen exploration on close.
  */
 
-type TabId = "overview" | "science" | "exploration" | "references";
+type TabId = "overview" | "discover" | "science" | "exploration" | "references";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "overview", label: "Overview" },
+  { id: "discover", label: "Discover" },
   { id: "science", label: "Science" },
   { id: "exploration", label: "Exploration" },
   { id: "references", label: "References" },
@@ -52,6 +54,8 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
   useEffect(() => {
     if (!entry) return;
     setTab("overview");
+    // Record the visit in discovery history — every new selection counts.
+    if (id) HistoryStore.visit({ id, title: entry.title });
     if (firstRender.current) {
       firstRender.current = false;
       return;
@@ -69,6 +73,17 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
   }, [open]);
 
   const launcherOpacity = ui.activity === "cinematic" ? "opacity-0" : "opacity-100";
+
+  // Phase-13 entry point — comparison view is not implemented yet, so we
+  // simply surface the intent. The handler stays here so future wiring is
+  // a single-file change.
+  const notifyCompare = (otherId: string) => {
+    import("sonner").then(({ toast }) =>
+      toast("Comparison view ships in Phase 13", {
+        description: `Selected: ${entry?.title} ↔ ${otherId}`,
+      }),
+    );
+  };
 
   // ============================== launcher ==============================
   const launcher = (
@@ -137,6 +152,7 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
 
       <article className="min-h-0 flex-1 overflow-y-auto px-1 pb-10 [scrollbar-width:thin]">
         {tab === "overview" && <OverviewTab entry={entry} />}
+        {tab === "discover" && <DiscoveryView onCompareRequest={notifyCompare} />}
         {tab === "science" && <ScienceTab entry={entry} />}
         {tab === "exploration" && <ExplorationTab entry={entry} />}
         {tab === "references" && <ReferencesTab entry={entry} />}
