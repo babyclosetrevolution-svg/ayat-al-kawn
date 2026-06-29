@@ -29,6 +29,12 @@ export const TOPICS: Topic[] = [
   { id: "topic:solar-system", title: "The Solar System", category: "Cosmography", summary: "Sun, planets, moons and the broader heliosphere." },
   { id: "topic:scale", title: "The Scale of the Universe", category: "Cosmography", summary: "Distances from kilometers to light-years to megaparsecs." },
   { id: "topic:galactic-structure", title: "Galactic Structure", category: "Galactic astronomy", summary: "Disks, arms, bulges and haloes of spiral galaxies." },
+
+  // Deep sky
+  { id: "topic:deep-sky", title: "Deep Sky Objects", category: "Observational astronomy", summary: "Galaxies, nebulae, and clusters beyond the Solar System." },
+  { id: "topic:nebulae", title: "Nebulae", category: "Interstellar medium", summary: "Clouds of gas and dust where stars are born — and where they die." },
+  { id: "topic:star-clusters", title: "Star Clusters", category: "Stellar populations", summary: "Gravitationally bound families of stars — open and globular." },
+  { id: "topic:stellar-death", title: "Stellar Death", category: "Stellar evolution", summary: "Supernovae, planetary nebulae, and the remnants stars leave behind." },
 ];
 
 export const TOPIC_INDEX: Map<string, Topic> = new Map(
