@@ -172,9 +172,10 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
           role="dialog"
           aria-label="Knowledge"
           aria-hidden={!open}
-          className={`fixed inset-x-3 bottom-3 z-40 ${GLASS_SURFACE} flex max-h-[78vh] flex-col overflow-hidden transition-all duration-500 ease-out ${
+          className={`fixed inset-x-3 z-40 ${GLASS_SURFACE} flex max-h-[78dvh] flex-col overflow-hidden transition-all duration-500 ease-out ${
             open ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-6 opacity-0"
           }`}
+          style={{ bottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}
         >
           <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-white/20" aria-hidden />
           <div className="mt-1 flex items-center justify-between px-5">
@@ -182,6 +183,7 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
           </div>
           {journal}
         </aside>
+
       ) : (
         <aside
           role="dialog"
