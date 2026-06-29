@@ -186,12 +186,12 @@ export function Markdown({ source }: { source: string }) {
               3: "text-base font-medium text-white/95 mt-1",
               4: "text-sm font-medium uppercase tracking-[0.2em] text-white/70 mt-1",
             } as const;
-            const Tag = (`h${b.level}` as unknown) as keyof JSX.IntrinsicElements;
-            return (
-              <Tag key={i} className={sizes[b.level]}>
-                {renderInline(b.text, `h-${i}`)}
-              </Tag>
-            );
+            const className = sizes[b.level];
+            const inner = renderInline(b.text, `h-${i}`);
+            if (b.level === 1) return <h1 key={i} className={className}>{inner}</h1>;
+            if (b.level === 2) return <h2 key={i} className={className}>{inner}</h2>;
+            if (b.level === 3) return <h3 key={i} className={className}>{inner}</h3>;
+            return <h4 key={i} className={className}>{inner}</h4>;
           }
           case "paragraph":
             return <p key={i}>{renderInline(b.text, `p-${i}`)}</p>;
