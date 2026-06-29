@@ -36,6 +36,9 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
   const [stars, setStars] = useState<CelestialBodyData[]>(
     () => CatalogManager.get("stars") ?? [],
   );
+  const [galaxies, setGalaxies] = useState<GalaxyData[]>(
+    () => CatalogManager.get("galaxies") ?? [],
+  );
   const [active, setActive] = useState<FocusKey>(FocusRegistry.getActive());
   const [open, setOpen] = useState(true);
   const [orbits, setOrbits] = useState(VisibilityRegistry.get("orbits"));
@@ -51,7 +54,10 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
     if (stars.length === 0) {
       CatalogManager.load("stars").then(setStars);
     }
-  }, [bodies.length, stars.length]);
+    if (galaxies.length === 0) {
+      CatalogManager.load("galaxies").then(setGalaxies);
+    }
+  }, [bodies.length, stars.length, galaxies.length]);
 
   useEffect(() => FocusRegistry.subscribe(setActive), []);
   useEffect(
@@ -67,7 +73,10 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
     });
   }, [active]);
 
-  const groups = useMemo(() => groupBodies(bodies, stars), [bodies, stars]);
+  const groups = useMemo(
+    () => groupBodies(bodies, stars, galaxies),
+    [bodies, stars, galaxies],
+  );
   const flat = useMemo(
     () =>
       groups.flatMap((g) =>
@@ -77,6 +86,7 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
       ),
     [groups, collapsed, query],
   );
+
 
   // Keyboard navigation through the visible list.
   const onKey = (e: React.KeyboardEvent) => {
