@@ -135,7 +135,7 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
 
       <TabBar tab={tab} setTab={setTab} />
 
-      <article className="flex-1 overflow-y-auto pb-10 [scrollbar-width:thin]">
+      <article className="min-h-0 flex-1 overflow-y-auto px-1 pb-10 [scrollbar-width:thin]">
         {tab === "overview" && <OverviewTab entry={entry} />}
         {tab === "science" && <ScienceTab entry={entry} />}
         {tab === "exploration" && <ExplorationTab entry={entry} />}
