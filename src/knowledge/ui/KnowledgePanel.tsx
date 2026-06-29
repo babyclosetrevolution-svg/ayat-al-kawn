@@ -191,7 +191,7 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
           role="dialog"
           aria-label="Knowledge"
           aria-hidden={!open}
-          className={`fixed right-3 top-1/2 z-40 -translate-y-1/2 ${GLASS_SURFACE} flex h-[84vh] w-[420px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden transition-all duration-500 ease-out`}
+          className={`fixed right-3 top-1/2 z-40 -translate-y-1/2 ${GLASS_SURFACE} flex h-[min(84dvh,780px)] max-h-[calc(100dvh-1.5rem)] w-[420px] max-w-[calc(100vw-1.5rem)] flex-col overflow-hidden transition-all duration-500 ease-out`}
           style={{
             transform: open
               ? "translate(0, -50%)"
