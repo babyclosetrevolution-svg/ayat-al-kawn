@@ -22,7 +22,7 @@ export function breadcrumbFor(id: EntityId | null | undefined): Crumb[] {
   while (current && !guard.has(current)) {
     chain.push(current);
     guard.add(current);
-    const parentEdge = DiscoveryGraph.relationsOfKind(current, ["parent"])[0];
+    const parentEdge: Relation | undefined = DiscoveryGraph.relationsOfKind(current, ["parent"])[0];
     const nextId: EntityId | null = parentEdge ? parentEdge.to : null;
     current = nextId;
   }
