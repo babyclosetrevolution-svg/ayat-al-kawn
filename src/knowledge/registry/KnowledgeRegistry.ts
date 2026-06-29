@@ -45,3 +45,4 @@ export const KnowledgeRegistry = new KnowledgeRegistryImpl();
 KnowledgeRegistry.registerMany(SOLAR_SYSTEM_KNOWLEDGE);
 KnowledgeRegistry.registerMany(STELLAR_KNOWLEDGE);
 KnowledgeRegistry.registerMany(GALACTIC_KNOWLEDGE);
+KnowledgeRegistry.registerMany(DEEP_SKY_KNOWLEDGE);
