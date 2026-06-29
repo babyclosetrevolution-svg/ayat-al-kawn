@@ -13,6 +13,8 @@ import type { CelestialBodyData } from "../world/types/CelestialBody";
 import { SOLAR_SYSTEM_BODIES } from "../data/solar-system/bodies";
 import { STELLAR_NEIGHBORHOOD } from "../data/stars/catalog";
 import { GALAXY_CATALOG, type GalaxyData } from "../data/galaxy/milky-way";
+import { DEEP_SKY_CATALOG } from "../data/deep-sky";
+import type { DeepSkyBodyData } from "../data/deep-sky";
 
 export type CatalogId =
   | "solar-system"
