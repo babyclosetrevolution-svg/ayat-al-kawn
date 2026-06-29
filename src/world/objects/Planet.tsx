@@ -110,12 +110,19 @@ export function Planet({ data, moons = [], starPosition }: Props) {
             <sphereGeometry args={[data.radius, 96, 96]} />
             <PlanetMaterial material={data.material} textures={data.textures} />
           </mesh>
-          {data.clouds && <CloudLayer radius={data.radius} clouds={data.clouds} />}
+          {data.clouds && (
+            <CloudLayer
+              radius={data.radius}
+              clouds={data.clouds}
+              visible={cloudsVisible}
+            />
+          )}
           {data.atmosphere && (
             <AtmosphereLayer
               radius={data.radius}
               atmosphere={data.atmosphere}
               sunPosition={starPosition}
+              intensityMultiplier={atmoIntensity}
             />
           )}
           {data.rings && (
@@ -123,8 +130,11 @@ export function Planet({ data, moons = [], starPosition }: Props) {
               rings={data.rings}
               planetRadius={data.radius}
               sunPosition={starPosition}
+              visible={ringsVisible}
+              tiltOffset={(ringTiltDeg * Math.PI) / 180}
             />
           )}
+
           {moons.map((m) => (
             <Moon key={m.id} data={m} />
           ))}

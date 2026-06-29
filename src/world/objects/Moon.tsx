@@ -6,6 +6,8 @@ import { FocusRegistry } from "../state/focus";
 import { PlanetMaterial } from "../materials/PlanetMaterial";
 import { OrbitLine } from "../components/OrbitLine";
 import { useOrbit, useRotation } from "../../sim";
+import { useScienceParam } from "../../science/hooks/useScienceParam";
+
 
 /**
  * Moon — generic satellite. Orbit and spin are both delegated to the
