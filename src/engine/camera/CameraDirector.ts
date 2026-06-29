@@ -110,29 +110,22 @@ class CameraDirectorImpl {
 
       // Idle cinematic motion — subtle drift around the target + breathing.
       const idle = this.elapsed > this.interactingUntil && !this.reducedMotion;
+      const dir = this.offsetDir.clone();
       if (idle) {
         const angle = this.elapsed * this.activePreset.idleDrift;
         const c = Math.cos(angle);
         const s = Math.sin(angle);
-        const dir = this.offsetDir.clone();
         const x = dir.x * c - dir.z * s;
         const z = dir.x * s + dir.z * c;
         dir.set(x, dir.y, z);
+      }
+      this.desiredCamera
+        .copy(rec.position)
+        .addScaledVector(dir, this.offsetLen);
+      if (idle) {
         const breath =
           Math.sin(this.elapsed * 0.35) * this.activePreset.breathing;
-        this.desiredCamera
-          .copy(rec.position)
-          .addScaledVector(dir, this.offsetLen)
-          .addScalar(0)
-          .y += breath * this.offsetLen;
-        this.desiredCamera
-          .copy(rec.position)
-          .addScaledVector(dir, this.offsetLen);
         this.desiredCamera.y += breath * this.offsetLen;
-      } else {
-        this.desiredCamera
-          .copy(rec.position)
-          .addScaledVector(this.offsetDir, this.offsetLen);
       }
     } else {
       this.desiredTarget.copy(this.currentTarget);
