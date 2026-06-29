@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
+
 import * as THREE from "three";
 import type { CelestialBodyData } from "../../world/types/CelestialBody";
 import type { ComparisonKind } from "../types";
@@ -150,25 +151,30 @@ export function ComparisonScene({ bodies, kind }: SceneProps) {
   const radii = useMemo(() => computeRadii(bodies, kind), [bodies, kind]);
   const { offsets, totalWidth } = useMemo(() => layoutOffsets(radii), [radii]);
   const maxRadius = Math.max(...radii, 0.001);
-  const center = offsets.length > 0 ? (offsets[0] - radii[0] + offsets[offsets.length - 1] + radii[radii.length - 1]) / 2 : 0;
   const omega = 0.25; // shared rotation rate.
+  const half = totalWidth / 2;
 
   return (
     <Canvas
       dpr={[1, 2]}
       gl={{ antialias: true, alpha: true }}
-      camera={{ fov: 35, near: 0.1, far: 500, position: [center, 0, 30] }}
+      camera={{ fov: 35, near: 0.1, far: 500, position: [0, 0, 30] }}
     >
       <color attach="background" args={["#06080f"]} />
       <ambientLight intensity={0.35} />
       <directionalLight position={[6, 4, 8]} intensity={1.2} color="#fff8e7" />
       <directionalLight position={[-8, -2, 4]} intensity={0.25} color="#9ec5ff" />
       {bodies.map((b, i) => (
-        <SphereBody key={b.id} body={b} targetRadius={radii[i]} x={offsets[i] - totalWidth / 2 + center * 0} omega={omega} />
+        <SphereBody
+          key={b.id}
+          body={b}
+          targetRadius={radii[i]}
+          x={offsets[i] - half}
+          omega={omega}
+        />
       ))}
       <FitCamera totalWidth={totalWidth} maxRadius={maxRadius} center={0} />
     </Canvas>
   );
 }
 
-useEffect; // tree-shake guard — Html requires React Suspense at parent layer.
