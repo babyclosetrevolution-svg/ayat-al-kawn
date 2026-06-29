@@ -126,3 +126,4 @@ export const CatalogManager = new CatalogManagerImpl();
 CatalogManager.register("solar-system", async () => SOLAR_SYSTEM_BODIES);
 CatalogManager.register("stars", async () => STELLAR_NEIGHBORHOOD);
 CatalogManager.register("galaxies", async () => GALAXY_CATALOG);
+CatalogManager.register("deep-sky", async () => DEEP_SKY_CATALOG);
