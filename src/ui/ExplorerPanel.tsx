@@ -88,7 +88,8 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
     if (bodies.length === 0) CatalogManager.load("solar-system").then(setBodies);
     if (stars.length === 0) CatalogManager.load("stars").then(setStars);
     if (galaxies.length === 0) CatalogManager.load("galaxies").then(setGalaxies);
-  }, [bodies.length, stars.length, galaxies.length]);
+    if (deepSky.length === 0) CatalogManager.load("deep-sky").then(setDeepSky);
+  }, [bodies.length, stars.length, galaxies.length, deepSky.length]);
 
   useEffect(() => FocusRegistry.subscribe(setActive), []);
   useEffect(
