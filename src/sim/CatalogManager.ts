@@ -21,6 +21,7 @@ export type CatalogId =
   | "stars"
   | "galaxies"
   | "nebulae"
+  | "deep-sky"
   | "missions"
   | "exoplanets";
 
@@ -30,6 +31,7 @@ export interface CatalogTypeMap {
   stars: CelestialBodyData[];
   galaxies: GalaxyData[];
   nebulae: unknown[];
+  "deep-sky": DeepSkyBodyData[];
   missions: unknown[];
   exoplanets: unknown[];
 }
