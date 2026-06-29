@@ -11,6 +11,7 @@
 
 import type { CelestialBodyData } from "../world/types/CelestialBody";
 import { SOLAR_SYSTEM_BODIES } from "../data/solar-system/bodies";
+import { STELLAR_NEIGHBORHOOD } from "../data/stars/catalog";
 
 export type CatalogId =
   | "solar-system"
