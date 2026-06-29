@@ -16,6 +16,7 @@ import {
   SectionCard,
   StatGrid,
 } from "../components/blocks";
+import { DiscoveryView, HistoryStore } from "../../discovery";
 
 /**
  * KnowledgePanel — scientific journal for the active body.
@@ -27,10 +28,11 @@ import {
  *    returns the user to fullscreen exploration on close.
  */
 
-type TabId = "overview" | "science" | "exploration" | "references";
+type TabId = "overview" | "discover" | "science" | "exploration" | "references";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "overview", label: "Overview" },
+  { id: "discover", label: "Discover" },
   { id: "science", label: "Science" },
   { id: "exploration", label: "Exploration" },
   { id: "references", label: "References" },
