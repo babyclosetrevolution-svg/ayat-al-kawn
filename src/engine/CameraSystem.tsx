@@ -116,7 +116,11 @@ export function CameraSystem() {
       zoomSpeed={ENGINE_CONFIG.controls.zoomSpeed}
       minDistance={ENGINE_CONFIG.controls.minDistance}
       maxDistance={ENGINE_CONFIG.controls.maxDistance}
+      // Prevent disorienting flips while keeping free orbit comfortable.
+      minPolarAngle={0.18}
+      maxPolarAngle={Math.PI - 0.18}
       enablePan
     />
   );
 }
+
