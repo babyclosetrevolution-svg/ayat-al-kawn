@@ -1,6 +1,7 @@
 import type { KnowledgeEntry } from "../types/KnowledgeEntry";
 import { SOLAR_SYSTEM_KNOWLEDGE } from "./solar-system";
 import { STELLAR_KNOWLEDGE } from "./stars";
+import { GALACTIC_KNOWLEDGE } from "./galaxies";
 
 /**
  * KnowledgeRegistry — resolves a celestial body id to its educational entry.
@@ -42,3 +43,4 @@ export const KnowledgeRegistry = new KnowledgeRegistryImpl();
 // Default registrations.
 KnowledgeRegistry.registerMany(SOLAR_SYSTEM_KNOWLEDGE);
 KnowledgeRegistry.registerMany(STELLAR_KNOWLEDGE);
+KnowledgeRegistry.registerMany(GALACTIC_KNOWLEDGE);

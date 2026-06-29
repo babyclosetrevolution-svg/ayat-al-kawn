@@ -121,3 +121,4 @@ export const CatalogManager = new CatalogManagerImpl();
 // grows beyond what fits in a TypeScript module.
 CatalogManager.register("solar-system", async () => SOLAR_SYSTEM_BODIES);
 CatalogManager.register("stars", async () => STELLAR_NEIGHBORHOOD);
+CatalogManager.register("galaxies", async () => GALAXY_CATALOG);
