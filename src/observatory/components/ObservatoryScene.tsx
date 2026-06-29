@@ -73,12 +73,11 @@ function Horizon() {
     g.setFromPoints(points);
     return g;
   }, [points]);
-  return (
-    <line frustumCulled={false}>
-      <primitive object={geom} attach="geometry" />
-      <lineBasicMaterial color="#7aa7ff" transparent opacity={0.55} />
-    </line>
-  );
+  const line = useMemo(() => {
+    const mat = new THREE.LineBasicMaterial({ color: "#7aa7ff", transparent: true, opacity: 0.55 });
+    return new THREE.LineLoop(geom, mat);
+  }, [geom]);
+  return <primitive object={line} />;
 }
 
 function CardinalLabels() {
@@ -134,12 +133,10 @@ function AzimuthalGrid() {
   }, []);
   return (
     <group>
-      {lines.map((g, i) => (
-        <line key={i} frustumCulled={false}>
-          <primitive object={g} attach="geometry" />
-          <lineBasicMaterial color="#3a6c9c" transparent opacity={0.22} />
-        </line>
-      ))}
+      {lines.map((g, i) => {
+        const mat = new THREE.LineBasicMaterial({ color: "#3a6c9c", transparent: true, opacity: 0.22 });
+        return <primitive key={i} object={new THREE.Line(g, mat)} />;
+      })}
     </group>
   );
 }
@@ -175,12 +172,10 @@ function EquatorialGrid({
   }, [lat, lon, jd]);
   return (
     <group>
-      {lines.map((g, i) => (
-        <line key={i} frustumCulled={false}>
-          <primitive object={g} attach="geometry" />
-          <lineBasicMaterial color="#a565d8" transparent opacity={0.22} />
-        </line>
-      ))}
+      {lines.map((g, i) => {
+        const mat = new THREE.LineBasicMaterial({ color: "#a565d8", transparent: true, opacity: 0.22 });
+        return <primitive key={i} object={new THREE.Line(g, mat)} />;
+      })}
     </group>
   );
 }
@@ -238,12 +233,10 @@ function ConstellationLayer({
         }),
       )}
       {/* Lines */}
-      {showLines && lineGeoms.map((g, i) => (
-        <line key={i} frustumCulled={false}>
-          <primitive object={g} attach="geometry" />
-          <lineBasicMaterial color="#5fb8ff" transparent opacity={0.28} />
-        </line>
-      ))}
+      {showLines && lineGeoms.map((g, i) => {
+        const mat = new THREE.LineBasicMaterial({ color: "#5fb8ff", transparent: true, opacity: 0.28 });
+        return <primitive key={i} object={new THREE.LineSegments(g, mat)} />;
+      })}
       {/* Labels */}
       {showLabels && data.map(({ c, centroid, visible }) =>
         visible ? (
