@@ -12,6 +12,7 @@ import { ComparisonOverlay } from "../scale";
 import { ObservatoryRoot, ModeSwitcher } from "../observatory";
 import "../discovery";
 import "../exploration";
+import "../encyclopedia/seed";
 
 
 /**

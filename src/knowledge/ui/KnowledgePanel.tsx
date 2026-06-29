@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { FocusRegistry } from "../../world/state/focus";
 import { useActiveKnowledge } from "../hooks/useActiveKnowledge";
 import type { KnowledgeEntry } from "../types/KnowledgeEntry";
@@ -19,27 +19,74 @@ import {
 import { DiscoveryView, HistoryStore } from "../../discovery";
 import { ScienceExploreView, ExperienceRegistry } from "../../science";
 import { ComparisonState } from "../../scale";
+import { EncyclopediaRegistry } from "../../encyclopedia";
+
+// Encyclopedia section views — each one ships in its own code-split chunk
+// and only loads when the user opens the matching tab.
+const ArticleView = lazy(() =>
+  import("../../encyclopedia/views/ArticleView").then((m) => ({ default: m.ArticleView })),
+);
+const GalleryView = lazy(() =>
+  import("../../encyclopedia/views/GalleryView").then((m) => ({ default: m.GalleryView })),
+);
+const TimelineView = lazy(() =>
+  import("../../encyclopedia/views/TimelineView").then((m) => ({ default: m.TimelineView })),
+);
+const RelatedView = lazy(() =>
+  import("../../encyclopedia/views/RelatedView").then((m) => ({ default: m.RelatedView })),
+);
+const SourcesView = lazy(() =>
+  import("../../encyclopedia/views/SourcesView").then((m) => ({ default: m.SourcesView })),
+);
+const FactsView = lazy(() =>
+  import("../../encyclopedia/views/FactsView").then((m) => ({ default: m.FactsView })),
+);
+const CompareView = lazy(() =>
+  import("../../encyclopedia/views/CompareView").then((m) => ({ default: m.CompareView })),
+);
 
 
 /**
- * KnowledgePanel — scientific journal for the active body.
+ * KnowledgePanel — scientific encyclopedia for the active body.
  *
  * Behaviour:
  *  - Desktop: docked right drawer, opens on selection (unless dismissed),
  *    persists when pinned. Closes when the user clicks outside or hits Esc.
- *  - Mobile: floating info button bottom-right launches a bottom sheet that
- *    returns the user to fullscreen exploration on close.
+ *  - Mobile: floating info button bottom-right launches a bottom sheet.
+ *
+ * The panel is a thin shell: every tab lazy-loads its own view, so opening
+ * "Overview" never pulls in Gallery / Timeline / Compare code.
  */
 
-type TabId = "overview" | "discover" | "explore" | "science" | "exploration" | "references";
+type TabId =
+  | "overview"
+  | "article"
+  | "science"
+  | "discover"
+  | "explore"
+  | "compare"
+  | "gallery"
+  | "exploration"
+  | "timeline"
+  | "related"
+  | "facts"
+  | "references"
+  | "sources";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "overview", label: "Overview" },
+  { id: "article", label: "Article" },
+  { id: "science", label: "Science" },
   { id: "discover", label: "Discover" },
   { id: "explore", label: "Explore" },
-  { id: "science", label: "Science" },
+  { id: "compare", label: "Compare" },
+  { id: "gallery", label: "Gallery" },
   { id: "exploration", label: "Missions" },
+  { id: "timeline", label: "Timeline" },
+  { id: "related", label: "Related" },
+  { id: "facts", label: "Facts" },
   { id: "references", label: "References" },
+  { id: "sources", label: "Sources" },
 ];
 
 
@@ -50,9 +97,34 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
   const open = ui.panels.knowledge === "open";
   const pinned = ui.pinned.knowledge;
   const [tab, setTab] = useState<TabId>("overview");
-  // Hide the Explore tab for bodies that have no registered experiences.
+  // Tab availability is driven purely by registered data — no hardcoding.
   const hasExperiences = ExperienceRegistry.hasAny(id);
-  const availableTabs = TABS.filter((t) => t.id !== "explore" || hasExperiences);
+  const hasEncyclopedia = id ? EncyclopediaRegistry.has(id) : false;
+  const peek = id ? EncyclopediaRegistry.peek(id) : undefined;
+  const hasGallery = (peek?.gallery?.length ?? 0) > 0 || hasEncyclopedia;
+  const hasTimeline =
+    (peek?.timeline?.length ?? 0) > 0 ||
+    (entry?.exploration?.timeline?.length ?? 0) > 0 ||
+    hasEncyclopedia;
+  const hasArticle = (peek?.article?.length ?? 0) > 0 || hasEncyclopedia;
+  const hasFacts =
+    (entry?.interestingFacts?.length ?? 0) > 0 ||
+    (peek?.facts?.length ?? 0) > 0 ||
+    hasEncyclopedia;
+  const hasSources = (peek?.sources?.length ?? 0) > 0 || hasEncyclopedia;
+  const availableTabs = TABS.filter((t) => {
+    switch (t.id) {
+      case "explore": return hasExperiences;
+      case "article": return hasArticle;
+      case "gallery": return hasGallery;
+      case "timeline": return hasTimeline;
+      case "facts": return hasFacts;
+      case "sources": return hasSources;
+      case "exploration": return !!entry?.exploration;
+      case "references": return (entry?.references?.length ?? 0) > 0;
+      default: return true;
+    }
+  });
   // If the user is on a now-unavailable tab, fall back to Overview.
   useEffect(() => {
     if (!availableTabs.some((t) => t.id === tab)) setTab("overview");
@@ -173,13 +245,23 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
       <TabBar tab={tab} setTab={setTab} tabs={availableTabs} />
 
       <article className="min-h-0 flex-1 overflow-y-auto px-1 pb-10 [scrollbar-width:thin]">
-        {tab === "overview" && <OverviewTab entry={entry} />}
-        {tab === "discover" && <DiscoveryView onCompareRequest={openComparison} />}
-        {tab === "explore" && <ScienceExploreView bodyId={id} />}
-        {tab === "science" && <ScienceTab entry={entry} />}
-        {tab === "exploration" && <ExplorationTab entry={entry} />}
-        {tab === "references" && <ReferencesTab entry={entry} />}
+        <Suspense fallback={<EmptyState message="Loading…" />}>
+          {tab === "overview" && <OverviewTab entry={entry} />}
+          {tab === "article" && <ArticleView id={id} fallbackOverview={entry.overview} />}
+          {tab === "discover" && <DiscoveryView onCompareRequest={openComparison} />}
+          {tab === "explore" && <ScienceExploreView bodyId={id} />}
+          {tab === "science" && <ScienceTab entry={entry} />}
+          {tab === "compare" && <CompareView id={id} />}
+          {tab === "gallery" && <GalleryView id={id} />}
+          {tab === "exploration" && <ExplorationTab entry={entry} />}
+          {tab === "timeline" && <TimelineView id={id} />}
+          {tab === "related" && <RelatedView id={id} />}
+          {tab === "facts" && <FactsView id={id} />}
+          {tab === "references" && <ReferencesTab entry={entry} />}
+          {tab === "sources" && <SourcesView id={id} />}
+        </Suspense>
       </article>
+
 
     </div>
   ) : (
