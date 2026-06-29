@@ -11,6 +11,7 @@ import { Toaster } from "../components/ui/sonner";
 import { ComparisonOverlay } from "../scale";
 import { ObservatoryRoot, ModeSwitcher } from "../observatory";
 import "../discovery";
+import "../exploration";
 
 
 /**
