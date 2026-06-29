@@ -22,8 +22,9 @@ export function breadcrumbFor(id: EntityId | null | undefined): Crumb[] {
   while (current && !guard.has(current)) {
     chain.push(current);
     guard.add(current);
-    const parent = DiscoveryGraph.relationsOfKind(current, ["parent"])[0];
-    current = parent ? parent.to : null;
+    const parentEdge = DiscoveryGraph.relationsOfKind(current, ["parent"])[0];
+    const nextId: EntityId | null = parentEdge ? parentEdge.to : null;
+    current = nextId;
   }
   chain.reverse();
   for (const c of chain) trail.push({ id: c, title: titleOf(c) });
