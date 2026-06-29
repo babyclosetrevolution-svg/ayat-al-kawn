@@ -301,13 +301,15 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
           role="dialog"
           aria-label="Explorer"
           aria-hidden={!open}
-          className={`fixed inset-x-3 bottom-3 z-40 ${GLASS_SURFACE} flex max-h-[70vh] flex-col overflow-hidden transition-all duration-500 ease-out ${
+          className={`fixed inset-x-3 z-40 ${GLASS_SURFACE} flex max-h-[70dvh] flex-col overflow-hidden transition-all duration-500 ease-out ${
             open ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-6 opacity-0"
           }`}
+          style={{ bottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}
         >
           <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-white/20" aria-hidden />
           {body}
         </aside>
+
       ) : (
         <aside
           role="dialog"
