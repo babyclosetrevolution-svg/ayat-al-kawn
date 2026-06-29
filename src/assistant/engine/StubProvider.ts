@@ -22,7 +22,7 @@ export const StubProvider: AssistantProvider = {
       return `I don't have a knowledge entry registered for "${ctx.focusId}" yet.`;
     }
 
-    const intro = `**${entry.name}** — ${entry.summary ?? ""}`.trim();
+    const intro = `**${entry.title}** — ${entry.overview ?? ""}`.trim();
     const detail = pickDetailFromEntry(entry, question);
     const tail = ctx.comparison
       ? `\n\nYou're currently comparing: ${ctx.comparison.ids.join(", ")} (${ctx.comparison.kind}).`
@@ -34,21 +34,15 @@ export const StubProvider: AssistantProvider = {
 function pickDetailFromEntry(entry: ReturnType<typeof KnowledgeRegistry.resolve>, question: string): string {
   if (!entry) return "";
   const q = question.toLowerCase();
-  type Pair = { label: string; value: string };
-  const pairs: Pair[] = [];
-  type Stats = Record<string, string | number | undefined>;
-  const stats = (entry as unknown as { stats?: Stats }).stats ?? {};
-  for (const [k, v] of Object.entries(stats)) {
-    if (v == null) continue;
-    pairs.push({ label: k, value: String(v) });
+  const pairs: { label: string; value: string }[] = [];
+  for (const f of entry.quickFacts ?? []) pairs.push({ label: f.label, value: `${f.value}${f.unit ? " " + f.unit : ""}` });
+  for (const f of entry.physicalProperties ?? []) pairs.push({ label: f.label, value: f.value });
+  if (pairs.length === 0 && entry.interestingFacts?.length) {
+    return entry.interestingFacts.slice(0, 3).map((f) => `• ${f}`).join("\n");
   }
-  if (pairs.length === 0) return "";
   const matched = pairs.find((p) => q.includes(p.label.toLowerCase()));
-  const chosen = matched ?? pairs.slice(0, 4);
-  if (Array.isArray(chosen)) {
-    return chosen.map((p) => `• **${p.label}** — ${p.value}`).join("\n");
-  }
-  return `• **${chosen.label}** — ${chosen.value}`;
+  const chosen = matched ? [matched] : pairs.slice(0, 4);
+  return chosen.map((p) => `• **${p.label}** — ${p.value}`).join("\n");
 }
 
 let activeProvider: AssistantProvider = StubProvider;

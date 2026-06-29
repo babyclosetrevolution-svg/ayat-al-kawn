@@ -17,8 +17,8 @@ export function snapshotAssistantContext(): AssistantContext {
   const obs = ObservatoryState.get();
   return {
     focusId,
-    focusName: entry?.name,
-    focusSummary: entry?.summary,
+    focusName: entry?.title,
+    focusSummary: entry?.overview,
     comparison: cs.open ? { kind: cs.kind, ids: cs.ids } : undefined,
     discoveryTopic: undefined,
     observatoryMode: obs.mode === "observatory",
