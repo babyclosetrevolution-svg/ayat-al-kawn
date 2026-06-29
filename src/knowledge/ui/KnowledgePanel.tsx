@@ -133,6 +133,16 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
           eyebrow={entry.category}
         />
         <div className="flex shrink-0 items-center gap-1.5 pt-7">
+          {id && (
+            <button
+              type="button"
+              onClick={() => ComparisonState.openWith([id])}
+              aria-label="Compare on cosmic scale"
+              className="rounded-full px-2.5 py-1 text-[0.55rem] uppercase tracking-[0.3em] text-white/55 outline-none transition-colors hover:text-sky-200 focus-visible:ring-1 focus-visible:ring-white/40"
+            >
+              Compare
+            </button>
+          )}
           {!isMobile && (
             <button
               type="button"
@@ -148,6 +158,7 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
               {pinned ? "Pinned" : "Pin"}
             </button>
           )}
+
           <button
             type="button"
             onClick={() => UIState.close("knowledge", { force: true })}
