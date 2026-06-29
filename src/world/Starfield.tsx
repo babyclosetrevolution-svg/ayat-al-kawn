@@ -46,9 +46,16 @@ export function Starfield() {
     return { positions, colors, sizes };
   }, []);
 
-  // Extremely slow rotation gives a sense of cosmic drift without distracting.
-  useFrame((_, delta) => {
+  const matRef = useRef<THREE.PointsMaterial>(null);
+
+  // Extremely slow rotation + barely perceptible twinkle keep the sky alive.
+  useFrame((state, delta) => {
     if (ref.current) ref.current.rotation.y += delta * 0.002;
+    if (matRef.current) {
+      const t = state.clock.elapsedTime;
+      matRef.current.opacity =
+        0.92 + Math.sin(t * 0.7) * 0.03 + Math.sin(t * 1.9) * 0.02;
+    }
   });
 
   return (
@@ -62,6 +69,7 @@ export function Starfield() {
         <bufferAttribute attach="attributes-size" args={[sizes, 1]} />
       </bufferGeometry>
       <pointsMaterial
+        ref={matRef}
         vertexColors
         size={ENGINE_CONFIG.starfield.baseSize}
         sizeAttenuation
