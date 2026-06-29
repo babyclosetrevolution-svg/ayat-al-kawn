@@ -5,48 +5,56 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import { ENGINE_CONFIG } from "../core/config";
 import { FocusRegistry, type FocusKey } from "../world/state/focus";
+import { CameraDirector } from "./camera/CameraDirector";
+import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 
 /**
- * CameraSystem — cinematic orbit/zoom/pan with smooth focus transitions.
+ * CameraSystem — thin runtime around OrbitControls + CameraDirector.
  *
- *  - OrbitControls provides damped orbit + zoom + pan.
- *  - Active focus target is read from FocusRegistry each frame; the controls'
- *    target and the camera position are lerped toward it so transitions feel
- *    filmic rather than snappy.
- *  - Double-clicking any mesh with userData.focusKey re-targets that object.
+ *  - OrbitControls handles damped pointer input.
+ *  - CameraDirector computes the cinematic desired pose every frame
+ *    (preset framing, easing, anticipation, idle drift, breathing).
+ *  - Double-clicking any mesh carrying `userData.focusKey` re-targets focus.
  */
 export function CameraSystem() {
   const controlsRef = useRef<OrbitControlsImpl>(null);
   const { camera, gl, scene } = useThree();
-  const desiredTarget = useRef(new THREE.Vector3());
-  const desiredCamPos = useRef(new THREE.Vector3());
-  const hasDesired = useRef(false);
+  const persp = camera as THREE.PerspectiveCamera;
+  const reduced = usePrefersReducedMotion();
 
-  // Establish initial desired pose from the active focus target once registered.
+  useEffect(() => CameraDirector.setReducedMotion(reduced), [reduced]);
+
+  // Refocus the Director when the active body changes.
   useEffect(() => {
-    const sync = (key: FocusKey) => {
-      if (!key) return;
-      const rec = FocusRegistry.get(key);
-      if (!rec) return;
-      desiredTarget.current.copy(rec.position);
-      // Offset camera relative to current viewing direction so we keep the user's angle.
-      const dir = new THREE.Vector3()
-        .subVectors(camera.position, controlsRef.current?.target ?? new THREE.Vector3())
-        .normalize();
-      if (dir.lengthSq() < 0.001) dir.set(0, 0.3, 1).normalize();
-      desiredCamPos.current
-        .copy(rec.position)
-        .add(dir.multiplyScalar(rec.distance));
-      hasDesired.current = true;
-    };
+    const sync = (key: FocusKey) => CameraDirector.onFocusChanged(key, persp);
     const unsub = FocusRegistry.subscribe(sync);
-    // Initial pull (after objects register).
-    const id = setTimeout(() => sync(FocusRegistry.getActive()), 60);
+    // Initial pull after objects register (next frame).
+    const id = setTimeout(() => {
+      CameraDirector.bootstrap(
+        persp,
+        controlsRef.current?.target ?? new THREE.Vector3(),
+      );
+      sync(FocusRegistry.getActive());
+    }, 60);
     return () => {
       unsub();
       clearTimeout(id);
     };
-  }, [camera]);
+  }, [persp]);
+
+  // User pointer activity → suppress idle drift briefly.
+  useEffect(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+    const onStart = () => CameraDirector.markInteraction();
+    const onChange = () => CameraDirector.markInteraction();
+    controls.addEventListener("start", onStart);
+    controls.addEventListener("change", onChange);
+    return () => {
+      controls.removeEventListener("start", onStart);
+      controls.removeEventListener("change", onChange);
+    };
+  }, []);
 
   // Double-click → focus the clicked celestial body.
   useEffect(() => {
@@ -74,28 +82,15 @@ export function CameraSystem() {
     return () => gl.domElement.removeEventListener("dblclick", onDbl);
   }, [camera, gl, scene]);
 
-  // Smoothly track the active target's live position and the desired camera pose.
   useFrame((_, delta) => {
     const controls = controlsRef.current;
     if (!controls) return;
-    const key = FocusRegistry.getActive();
-    if (key) {
-      const rec = FocusRegistry.get(key);
-      if (rec) {
-        desiredTarget.current.copy(rec.position);
-        // Keep camera at the offset captured when focus was set, but follow the moving target.
-        if (!hasDesired.current) {
-          desiredCamPos.current
-            .copy(rec.position)
-            .add(new THREE.Vector3(0, rec.distance * 0.3, rec.distance));
-          hasDesired.current = true;
-        }
-      }
-    }
-    if (hasDesired.current) {
-      const k = 1 - Math.pow(0.001, delta); // frame-rate independent ease
-      controls.target.lerp(desiredTarget.current, k * 0.9);
-      camera.position.lerp(desiredCamPos.current, k * 0.5);
+    const { targetPos, cameraPos, fov } = CameraDirector.update(persp, delta);
+    controls.target.copy(targetPos);
+    camera.position.copy(cameraPos);
+    if (Math.abs(persp.fov - fov) > 0.01) {
+      persp.fov = fov;
+      persp.updateProjectionMatrix();
     }
     controls.update();
   });
