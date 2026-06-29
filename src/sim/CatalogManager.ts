@@ -11,6 +11,7 @@
 
 import type { CelestialBodyData } from "../world/types/CelestialBody";
 import { SOLAR_SYSTEM_BODIES } from "../data/solar-system/bodies";
+import { STELLAR_NEIGHBORHOOD } from "../data/stars/catalog";
 
 export type CatalogId =
   | "solar-system"
@@ -23,7 +24,7 @@ export type CatalogId =
 // Per-catalog type map. Add new catalogs here as they come online.
 export interface CatalogTypeMap {
   "solar-system": CelestialBodyData[];
-  stars: unknown[];
+  stars: CelestialBodyData[];
   galaxies: unknown[];
   nebulae: unknown[];
   missions: unknown[];
@@ -72,3 +73,4 @@ export const CatalogManager = new CatalogManagerImpl();
 // Static dataset for now; will become an async fetch when the catalog
 // grows beyond what fits in a TypeScript module.
 CatalogManager.register("solar-system", async () => SOLAR_SYSTEM_BODIES);
+CatalogManager.register("stars", async () => STELLAR_NEIGHBORHOOD);

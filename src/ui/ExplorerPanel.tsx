@@ -12,17 +12,24 @@ import type { CelestialBodyData } from "../world/types/CelestialBody";
  */
 type Group = { id: string; label: string; items: CelestialBodyData[] };
 
-function groupBodies(bodies: CelestialBodyData[]): Group[] {
+function groupBodies(
+  bodies: CelestialBodyData[],
+  stars: CelestialBodyData[],
+): Group[] {
   return [
-    { id: "star", label: "Star", items: bodies.filter((b) => b.type === "star") },
+    { id: "star", label: "Local Star", items: bodies.filter((b) => b.type === "star") },
     { id: "planets", label: "Planets", items: bodies.filter((b) => b.type === "planet") },
     { id: "moons", label: "Moons", items: bodies.filter((b) => b.type === "moon") },
+    { id: "stars", label: "Stars", items: stars },
   ].filter((g) => g.items.length > 0);
 }
 
 export function ExplorerPanel({ visible }: { visible: boolean }) {
   const [bodies, setBodies] = useState<CelestialBodyData[]>(
     () => CatalogManager.get("solar-system") ?? [],
+  );
+  const [stars, setStars] = useState<CelestialBodyData[]>(
+    () => CatalogManager.get("stars") ?? [],
   );
   const [active, setActive] = useState<FocusKey>(FocusRegistry.getActive());
   const [open, setOpen] = useState(true);
@@ -36,7 +43,10 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
     if (bodies.length === 0) {
       CatalogManager.load("solar-system").then(setBodies);
     }
-  }, [bodies.length]);
+    if (stars.length === 0) {
+      CatalogManager.load("stars").then(setStars);
+    }
+  }, [bodies.length, stars.length]);
 
   useEffect(() => FocusRegistry.subscribe(setActive), []);
   useEffect(
@@ -52,7 +62,7 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
     });
   }, [active]);
 
-  const groups = useMemo(() => groupBodies(bodies), [bodies]);
+  const groups = useMemo(() => groupBodies(bodies, stars), [bodies, stars]);
   const flat = useMemo(
     () =>
       groups.flatMap((g) =>
