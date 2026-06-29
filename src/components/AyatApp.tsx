@@ -9,6 +9,7 @@ import { KnowledgePanel } from "../knowledge";
 import { MetricsOverlay } from "../metrics";
 import { Toaster } from "../components/ui/sonner";
 import { ComparisonOverlay } from "../scale";
+import { ObservatoryRoot, ModeSwitcher } from "../observatory";
 import "../discovery";
 
 
@@ -47,6 +48,8 @@ export function AyatApp() {
       <LoadingOverlay visible={loading} progress={progress} />
       <MetricsOverlay />
       <ComparisonOverlay />
+      <ObservatoryRoot />
+      {exploring && <ModeSwitcher />}
       <Toaster />
 
     </div>
