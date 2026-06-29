@@ -152,9 +152,11 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
     />
   );
 
+  if (!visible) return null;
   return (
     <>
       {launcher}
+
 
       {/* Click-outside backdrop — only catches when not pinned. */}
       <div
