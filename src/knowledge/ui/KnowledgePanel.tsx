@@ -245,13 +245,23 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
       <TabBar tab={tab} setTab={setTab} tabs={availableTabs} />
 
       <article className="min-h-0 flex-1 overflow-y-auto px-1 pb-10 [scrollbar-width:thin]">
-        {tab === "overview" && <OverviewTab entry={entry} />}
-        {tab === "discover" && <DiscoveryView onCompareRequest={openComparison} />}
-        {tab === "explore" && <ScienceExploreView bodyId={id} />}
-        {tab === "science" && <ScienceTab entry={entry} />}
-        {tab === "exploration" && <ExplorationTab entry={entry} />}
-        {tab === "references" && <ReferencesTab entry={entry} />}
+        <Suspense fallback={<EmptyState message="Loading…" />}>
+          {tab === "overview" && <OverviewTab entry={entry} />}
+          {tab === "article" && <ArticleView id={id} fallbackOverview={entry.overview} />}
+          {tab === "discover" && <DiscoveryView onCompareRequest={openComparison} />}
+          {tab === "explore" && <ScienceExploreView bodyId={id} />}
+          {tab === "science" && <ScienceTab entry={entry} />}
+          {tab === "compare" && <CompareView id={id} />}
+          {tab === "gallery" && <GalleryView id={id} />}
+          {tab === "exploration" && <ExplorationTab entry={entry} />}
+          {tab === "timeline" && <TimelineView id={id} />}
+          {tab === "related" && <RelatedView id={id} />}
+          {tab === "facts" && <FactsView id={id} />}
+          {tab === "references" && <ReferencesTab entry={entry} />}
+          {tab === "sources" && <SourcesView id={id} />}
+        </Suspense>
       </article>
+
 
     </div>
   ) : (
