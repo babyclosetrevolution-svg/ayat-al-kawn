@@ -13,12 +13,15 @@ import type { CelestialBodyData } from "../world/types/CelestialBody";
 import { SOLAR_SYSTEM_BODIES } from "../data/solar-system/bodies";
 import { STELLAR_NEIGHBORHOOD } from "../data/stars/catalog";
 import { GALAXY_CATALOG, type GalaxyData } from "../data/galaxy/milky-way";
+import { DEEP_SKY_CATALOG } from "../data/deep-sky";
+import type { DeepSkyBodyData } from "../data/deep-sky";
 
 export type CatalogId =
   | "solar-system"
   | "stars"
   | "galaxies"
   | "nebulae"
+  | "deep-sky"
   | "missions"
   | "exoplanets";
 
@@ -28,6 +31,7 @@ export interface CatalogTypeMap {
   stars: CelestialBodyData[];
   galaxies: GalaxyData[];
   nebulae: unknown[];
+  "deep-sky": DeepSkyBodyData[];
   missions: unknown[];
   exoplanets: unknown[];
 }
@@ -122,3 +126,4 @@ export const CatalogManager = new CatalogManagerImpl();
 CatalogManager.register("solar-system", async () => SOLAR_SYSTEM_BODIES);
 CatalogManager.register("stars", async () => STELLAR_NEIGHBORHOOD);
 CatalogManager.register("galaxies", async () => GALAXY_CATALOG);
+CatalogManager.register("deep-sky", async () => DEEP_SKY_CATALOG);

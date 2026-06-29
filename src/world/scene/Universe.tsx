@@ -81,6 +81,28 @@ export function Universe() {
     StreamingManager.registerRegion(neighborhood);
   }, []);
 
+  // Register every Deep Sky body with the FocusRegistry so the camera,
+  // knowledge, discovery and comparison engines pick them up — no extra
+  // rendering required for this phase.
+  useEffect(() => {
+    let cancelled = false;
+    import("../state/focus").then(({ FocusRegistry }) => {
+      CatalogManager.load("deep-sky").then((items) => {
+        if (cancelled) return;
+        for (const b of items) {
+          const [x, y, z] = b.position ?? [0, 0, 0];
+          FocusRegistry.register(b.id, {
+            position: new THREE.Vector3(x, y, z),
+            distance: b.radius * (b.focusDistanceFactor ?? 4),
+          });
+        }
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Reflect catalog load count into metrics overlay.
   useEffect(() => {
     const update = () =>
