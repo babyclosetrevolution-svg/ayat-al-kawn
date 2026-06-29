@@ -10,9 +10,11 @@ import type { CloudsDef } from "../types/CelestialBody";
 export function CloudLayer({
   radius,
   clouds,
+  visible = true,
 }: {
   radius: number;
   clouds: CloudsDef;
+  visible?: boolean;
 }) {
   const map = useLoader(THREE.TextureLoader, clouds.texture);
   useMemo(() => {
@@ -28,7 +30,7 @@ export function CloudLayer({
   });
 
   return (
-    <mesh ref={meshRef} scale={clouds.scale ?? 1.015}>
+    <mesh ref={meshRef} scale={clouds.scale ?? 1.015} visible={visible}>
       <sphereGeometry args={[radius, 96, 96]} />
       <meshPhongMaterial
         map={map}
@@ -39,3 +41,4 @@ export function CloudLayer({
     </mesh>
   );
 }
+

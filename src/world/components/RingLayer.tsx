@@ -81,12 +81,18 @@ interface Props {
   rings: RingsDef;
   planetRadius?: number;
   sunPosition?: THREE.Vector3;
+  /** Hide the rings without unmounting. */
+  visible?: boolean;
+  /** Extra tilt in radians applied to the ring plane (Science Engine). */
+  tiltOffset?: number;
 }
 
 export function RingLayer({
   rings,
   planetRadius = 1,
   sunPosition,
+  visible = true,
+  tiltOffset = 0,
 }: Props) {
   const cfg = RENDER_CONFIG.rings;
   const meshRef = useRef<THREE.Mesh>(null);
@@ -124,7 +130,12 @@ export function RingLayer({
   });
 
   return (
-    <mesh ref={meshRef} rotation={[Math.PI / 2, 0, 0]} renderOrder={2}>
+    <mesh
+      ref={meshRef}
+      rotation={[Math.PI / 2 + tiltOffset, 0, 0]}
+      renderOrder={2}
+      visible={visible}
+    >
       <ringGeometry args={[rings.innerRadius, rings.outerRadius, cfg.radialSegments, 4]} />
       <shaderMaterial
         uniforms={uniforms}
@@ -137,3 +148,4 @@ export function RingLayer({
     </mesh>
   );
 }
+

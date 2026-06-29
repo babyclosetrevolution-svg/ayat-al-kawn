@@ -56,22 +56,41 @@ interface Props {
   radius: number;
   atmosphere: AtmosphereDef;
   sunPosition: THREE.Vector3;
+  /** Optional live multiplier from the Science Engine. */
+  intensityMultiplier?: number;
+  /** Hide the layer entirely (kept mounted to preserve material warmup). */
+  visible?: boolean;
 }
 
-export function AtmosphereLayer({ radius, atmosphere, sunPosition }: Props) {
+export function AtmosphereLayer({
+  radius,
+  atmosphere,
+  sunPosition,
+  intensityMultiplier = 1,
+  visible = true,
+}: Props) {
   const cfg = RENDER_CONFIG.atmosphere;
   const uniforms = useMemo(
     () => ({
       uSunPos: { value: sunPosition.clone() },
       uColor: { value: new THREE.Color(atmosphere.color) },
-      uIntensity: { value: (atmosphere.intensity ?? 1) * cfg.intensity },
+      uIntensity: {
+        value: (atmosphere.intensity ?? 1) * cfg.intensity * intensityMultiplier,
+      },
       uRimPower: { value: cfg.rimPower },
     }),
-    [atmosphere.color, atmosphere.intensity, sunPosition, cfg.intensity, cfg.rimPower],
+    [
+      atmosphere.color,
+      atmosphere.intensity,
+      sunPosition,
+      cfg.intensity,
+      cfg.rimPower,
+      intensityMultiplier,
+    ],
   );
 
   return (
-    <mesh scale={atmosphere.scale ?? 1.08}>
+    <mesh scale={atmosphere.scale ?? 1.08} visible={visible}>
       <sphereGeometry args={[radius, cfg.segments, cfg.segments]} />
       <shaderMaterial
         uniforms={uniforms}
@@ -85,3 +104,4 @@ export function AtmosphereLayer({ radius, atmosphere, sunPosition }: Props) {
     </mesh>
   );
 }
+
