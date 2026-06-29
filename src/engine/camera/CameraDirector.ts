@@ -98,8 +98,9 @@ class CameraDirectorImpl {
         .set(this.activePreset.offset, this.activePreset.elevation, 1)
         .normalize();
     }
-    this.offsetLen = rec.distance * this.activePreset.distanceFactor;
+    this.offsetLen = rec.distance * this.activePreset.distanceFactor * viewportScale();
   }
+
 
   /** Per-frame update. Returns the smoothed pose for application by the caller. */
   update(camera: THREE.PerspectiveCamera, delta: number): DirectorUpdate {
