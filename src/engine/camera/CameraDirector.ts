@@ -175,6 +175,23 @@ class CameraDirectorImpl {
     this.currentTarget.lerp(this.desiredTarget, kTarget);
     this.currentCamera.lerp(this.desiredCamera, kCam);
 
+    // Collision floor — never let the camera punch through the focused body.
+    // The minimum safe distance is a fraction of the suggested distance,
+    // which itself encodes the body's radius.
+    if (rec) {
+      const minSafe = rec.distance * 0.55;
+      const toCam = new THREE.Vector3().subVectors(
+        this.currentCamera,
+        this.currentTarget,
+      );
+      const len = toCam.length();
+      if (len < minSafe && len > 1e-5) {
+        toCam.multiplyScalar(minSafe / len);
+        this.currentCamera.copy(this.currentTarget).add(toCam);
+      }
+    }
+
+
     // Smooth FOV blending — slight widening during long travel so the
     // sense of speed reads even in deep space.
     const targetFov = this.activePreset.fov + ease * 4;
