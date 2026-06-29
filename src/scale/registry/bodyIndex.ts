@@ -1,6 +1,7 @@
 import type { CelestialBodyData } from "../../world/types/CelestialBody";
 import { SOLAR_SYSTEM_BODIES } from "../../data/solar-system/bodies";
 import { STELLAR_NEIGHBORHOOD } from "../../data/stars/catalog";
+import { DEEP_SKY_CATALOG } from "../../data/deep-sky";
 
 /**
  * BodyIndex — unified lookup over every renderable body shipped by the
@@ -10,6 +11,7 @@ import { STELLAR_NEIGHBORHOOD } from "../../data/stars/catalog";
 const INDEX = new Map<string, CelestialBodyData>();
 for (const b of SOLAR_SYSTEM_BODIES) INDEX.set(b.id, b);
 for (const b of STELLAR_NEIGHBORHOOD) INDEX.set(b.id, b);
+for (const b of DEEP_SKY_CATALOG) INDEX.set(b.id, b);
 
 export function getBody(id: string | null | undefined): CelestialBodyData | undefined {
   if (!id) return undefined;
