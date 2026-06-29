@@ -102,6 +102,24 @@ export interface ScienceFacts {
   moonCount?: number;
   /** Free-form classification (e.g. "G2V", "Terrestrial", "Ice Giant"). */
   classification?: string;
+
+  // ── Stellar-only optional fields ──────────────────────────────────────
+  /** Spectral class (e.g. "G2V", "M5.5Ve", "B8Ia"). */
+  spectralClass?: string;
+  /** Effective surface temperature, K. Drives star color in renderer. */
+  effectiveTemperatureK?: number;
+  /** Bolometric luminosity in solar units. Drives glare & light intensity. */
+  luminositySuns?: number;
+  /** Mass in solar units. */
+  massSuns?: number;
+  /** Radius in solar units. */
+  radiusSuns?: number;
+  /** Distance from Earth, light-years. */
+  distanceLightYears?: number;
+  /** Distance from Earth, parsecs. */
+  distanceParsecs?: number;
+  /** Parent constellation. */
+  constellation?: string;
 }
 
 /**
