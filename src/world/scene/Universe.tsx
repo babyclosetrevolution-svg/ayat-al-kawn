@@ -10,6 +10,8 @@ import { Region } from "./Region";
 import { SolarSystem } from "./SolarSystem";
 import { StellarNeighborhood } from "./StellarNeighborhood";
 import { MilkyWayScene } from "./MilkyWayScene";
+import { DeepSkyScene } from "./DeepSkyScene";
+import type { DeepSkyBodyData } from "../../data/deep-sky";
 
 /**
  * Universe — root of the astronomical scene graph.
