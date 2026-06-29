@@ -23,7 +23,7 @@ export type CatalogId =
 // Per-catalog type map. Add new catalogs here as they come online.
 export interface CatalogTypeMap {
   "solar-system": CelestialBodyData[];
-  stars: unknown[];
+  stars: CelestialBodyData[];
   galaxies: unknown[];
   nebulae: unknown[];
   missions: unknown[];
