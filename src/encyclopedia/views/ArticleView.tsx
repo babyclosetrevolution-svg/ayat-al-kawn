@@ -34,7 +34,7 @@ export function ArticleView({
   return (
     <div className="space-y-4">
       {sections.map((s) => (
-        <SectionCard key={s.id} title={resolveText(s.title, locale) || undefined}>
+        <SectionCard key={s.id} title={resolveText(s.title, locale) || "Section"}>
           <Markdown source={resolveText(s.markdown, locale)} />
         </SectionCard>
       ))}
