@@ -213,7 +213,7 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
 
       <div
         ref={listRef}
-        className="flex-1 space-y-4 overflow-y-auto px-3 pb-4 [scrollbar-width:thin]"
+        className="min-h-0 flex-1 space-y-4 overflow-y-auto px-3 pb-4 [scrollbar-width:thin]"
       >
         {groups.map((g) => {
           const isCollapsed = collapsed[g.id];
