@@ -64,12 +64,15 @@ const glareVert = /* glsl */ `
 interface Props {
   radius: number;
   color?: string;
+  /** Multiplier on glare opacity and corona scale (luminosity-driven). */
+  intensityScale?: number;
 }
 
-export function SolarCorona({ radius, color }: Props) {
+export function SolarCorona({ radius, color, intensityScale = 1 }: Props) {
   const shellRef = useRef<THREE.ShaderMaterial>(null);
   const glareRef = useRef<THREE.Mesh>(null);
   const cfg = RENDER_CONFIG.star;
+  const scale = Math.max(0.3, intensityScale);
 
   const shellUniforms = useMemo(
     () => ({
@@ -82,9 +85,9 @@ export function SolarCorona({ radius, color }: Props) {
   const glareUniforms = useMemo(
     () => ({
       uColor: { value: new THREE.Color(color ?? cfg.coronaColor) },
-      uOpacity: { value: cfg.glareOpacity },
+      uOpacity: { value: cfg.glareOpacity * scale },
     }),
-    [color, cfg.coronaColor, cfg.glareOpacity],
+    [color, cfg.coronaColor, cfg.glareOpacity, scale],
   );
 
   useFrame((state) => {
@@ -96,7 +99,7 @@ export function SolarCorona({ radius, color }: Props) {
   return (
     <group>
       {/* Soft corona shell */}
-      <mesh scale={cfg.coronaScale}>
+      <mesh scale={cfg.coronaScale * (0.7 + 0.6 * Math.min(1.6, scale))}>
         <sphereGeometry args={[radius, 64, 64]} />
         <shaderMaterial
           ref={shellRef}
