@@ -12,6 +12,7 @@
 import type { CelestialBodyData } from "../world/types/CelestialBody";
 import { SOLAR_SYSTEM_BODIES } from "../data/solar-system/bodies";
 import { STELLAR_NEIGHBORHOOD } from "../data/stars/catalog";
+import { GALAXY_CATALOG, type GalaxyData } from "../data/galaxy/milky-way";
 
 export type CatalogId =
   | "solar-system"
@@ -25,11 +26,12 @@ export type CatalogId =
 export interface CatalogTypeMap {
   "solar-system": CelestialBodyData[];
   stars: CelestialBodyData[];
-  galaxies: unknown[];
+  galaxies: GalaxyData[];
   nebulae: unknown[];
   missions: unknown[];
   exoplanets: unknown[];
 }
+
 
 type Loader<K extends CatalogId> = () => Promise<CatalogTypeMap[K]>;
 type RegionLoader<K extends CatalogId> = (
