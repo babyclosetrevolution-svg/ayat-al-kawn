@@ -5,6 +5,7 @@ import { TitleScreen } from "../ui/TitleScreen";
 import { LoadingOverlay } from "../ui/LoadingOverlay";
 import { ExplorerPanel } from "../ui/ExplorerPanel";
 import { TitleBar } from "../ui/TitleBar";
+import { KnowledgePanel } from "../knowledge";
 
 /**
  * AyatApp — client-only composition root.
@@ -36,6 +37,7 @@ export function AyatApp() {
       </Engine>
       <TitleBar visible={exploring} />
       <ExplorerPanel visible={exploring} />
+      <KnowledgePanel visible={exploring} />
       <TitleScreen visible={!loading && !exploring} onBegin={() => setExploring(true)} />
       <LoadingOverlay visible={loading} progress={progress} />
     </div>
