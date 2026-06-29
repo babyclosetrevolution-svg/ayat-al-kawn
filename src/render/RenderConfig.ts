@@ -68,24 +68,24 @@ export interface RenderConfig {
 
 export const RENDER_CONFIG: RenderConfig = {
   exposure: {
-    base: 1.0,
-    min: 0.55,
-    max: 1.35,
-    rate: 0.6,
+    base: 0.92,
+    min: 0.5,
+    max: 1.18,
+    rate: 0.5,
   },
   bloom: {
     enabled: true,
-    intensity: 0.85,
-    luminanceThreshold: 0.55,
-    luminanceSmoothing: 0.25,
-    radius: 0.78,
+    intensity: 0.55,
+    luminanceThreshold: 0.72,
+    luminanceSmoothing: 0.3,
+    radius: 0.7,
     resolutionScale: 0.5,
   },
   star: {
-    coronaScale: 2.4,
+    coronaScale: 2.2,
     coronaColor: "#ffd089",
-    glareScale: 6.0,
-    glareOpacity: 0.35,
+    glareScale: 4.8,
+    glareOpacity: 0.22,
   },
   atmosphere: {
     segments: 96,
