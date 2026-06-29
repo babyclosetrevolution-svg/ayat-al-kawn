@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FocusRegistry } from "../../world/state/focus";
 import { useActiveKnowledge } from "../hooks/useActiveKnowledge";
 import type { KnowledgeEntry } from "../types/KnowledgeEntry";
@@ -43,13 +43,19 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
   const open = ui.panels.knowledge === "open";
   const pinned = ui.pinned.knowledge;
   const [tab, setTab] = useState<TabId>("overview");
+  const firstRender = useRef(true);
 
   // New selection — surface the panel automatically on desktop (unless the
   // user explicitly dismissed knowledge for this session via close). On
   // mobile the user must tap the info button to avoid surprise overlays.
+  // Skip the very first render so the panel stays collapsed at boot.
   useEffect(() => {
     if (!entry) return;
     setTab("overview");
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
     if (!isMobile) UIState.open("knowledge");
   }, [id, entry, isMobile]);
 
