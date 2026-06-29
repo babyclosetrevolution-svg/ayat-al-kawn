@@ -3,9 +3,12 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 /**
- * EmissiveStarMaterial — procedural value-noise surface for any star.
- * Identical visual signature to the original hand-rolled Sun shader; extracted
- * so Sirius, Proxima, Rigel, etc. can reuse it through tint uniforms.
+ * EmissiveStarMaterial — procedural plasma surface for any star.
+ *
+ * Multi-octave value noise drives a hot/cold temperature mix, with a
+ * slow-flowing "convection" term and a subtle granulation pattern so the
+ * surface reads as a turbulent photosphere rather than a static texture.
+ * Tint colors are uniform so Sirius, Proxima, Betelgeuse can all reuse it.
  */
 const vert = /* glsl */ `
   varying vec3 vNormal;
@@ -38,13 +41,33 @@ const frag = /* glsl */ `
                mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),
                    mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);
   }
+  float fbm(vec3 p) {
+    float v = 0.0;
+    float a = 0.55;
+    for (int i = 0; i < 5; i++) {
+      v += a * noise(p);
+      p *= 2.05;
+      a *= 0.55;
+    }
+    return v;
+  }
 
   void main() {
-    vec3 p = vPos * 0.25 + vec3(0.0, uTime * 0.04, 0.0);
-    float n = noise(p) * 0.6 + noise(p * 2.3) * 0.3 + noise(p * 5.1) * 0.1;
-    vec3 col = mix(uCold, uHot, smoothstep(0.35, 0.85, n));
-    float rim = pow(1.0 - max(dot(normalize(vNormal), vec3(0.0, 0.0, 1.0)), 0.0), 1.5);
-    col += uRim * rim * 0.4;
+    // Slow vertical drift — convection-like.
+    vec3 p = vPos * 0.22 + vec3(0.0, uTime * 0.025, 0.0);
+    float base = fbm(p);
+    // Fine granulation overlay.
+    float gran = noise(vPos * 4.0 + vec3(uTime * 0.05));
+    float n = base * 0.85 + gran * 0.15;
+
+    vec3 col = mix(uCold, uHot, smoothstep(0.32, 0.88, n));
+    // Bright hot spots — flare-like overshoot.
+    col += uHot * smoothstep(0.78, 0.95, n) * 0.5;
+
+    // Limb-darkening compensated rim brightening for visible "glow".
+    float rim = pow(1.0 - max(dot(normalize(vNormal), vec3(0.0, 0.0, 1.0)), 0.0), 1.4);
+    col += uRim * rim * 0.45;
+
     gl_FragColor = vec4(col, 1.0);
   }
 `;
@@ -56,8 +79,8 @@ interface Props {
 }
 
 export function EmissiveStarMaterial({
-  coldColor = "#ff8c26",
-  hotColor = "#fff2bf",
+  coldColor = "#ff8a26",
+  hotColor = "#fff4c8",
   rimColor = "#ffb259",
 }: Props) {
   const matRef = useRef<THREE.ShaderMaterial>(null);
