@@ -1,26 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FocusRegistry, type FocusKey } from "../world/state/focus";
 import { VisibilityRegistry } from "../world/state/visibility";
 import { CatalogManager } from "../sim";
 import type { CelestialBodyData } from "../world/types/CelestialBody";
 
 /**
- * ExplorerPanel — minimal grouped selector for every catalog body.
+ * ExplorerPanel — grouped, collapsible selector with keyboard navigation.
  *
  * Pure UI: reads the loaded solar-system catalog, writes selections into
- * the FocusRegistry. The camera system reacts on its own. Stays collapsed
- * by default so the cinematic scene is never crowded.
+ * the FocusRegistry. The camera and knowledge panels react on their own.
  */
-type Group = { label: string; items: CelestialBodyData[] };
+type Group = { id: string; label: string; items: CelestialBodyData[] };
 
 function groupBodies(bodies: CelestialBodyData[]): Group[] {
-  const star = bodies.filter((b) => b.type === "star");
-  const planets = bodies.filter((b) => b.type === "planet");
-  const moons = bodies.filter((b) => b.type === "moon");
   return [
-    { label: "Star", items: star },
-    { label: "Planets", items: planets },
-    { label: "Moons", items: moons },
+    { id: "star", label: "Star", items: bodies.filter((b) => b.type === "star") },
+    { id: "planets", label: "Planets", items: bodies.filter((b) => b.type === "planet") },
+    { id: "moons", label: "Moons", items: bodies.filter((b) => b.type === "moon") },
   ].filter((g) => g.items.length > 0);
 }
 
@@ -31,6 +27,10 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
   const [active, setActive] = useState<FocusKey>(FocusRegistry.getActive());
   const [open, setOpen] = useState(true);
   const [orbits, setOrbits] = useState(VisibilityRegistry.get("orbits"));
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [query, setQuery] = useState("");
+  const listRef = useRef<HTMLDivElement>(null);
+  const activeBtnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (bodies.length === 0) {
@@ -44,15 +44,48 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
     [],
   );
 
-  const groups = groupBodies(bodies);
+  // Scroll the active item into view smoothly when selection changes.
+  useEffect(() => {
+    activeBtnRef.current?.scrollIntoView({
+      block: "nearest",
+      behavior: "smooth",
+    });
+  }, [active]);
+
+  const groups = useMemo(() => groupBodies(bodies), [bodies]);
+  const flat = useMemo(
+    () =>
+      groups.flatMap((g) =>
+        (collapsed[g.id] ? [] : g.items).filter((b) =>
+          query ? b.name.toLowerCase().includes(query.toLowerCase()) : true,
+        ),
+      ),
+    [groups, collapsed, query],
+  );
+
+  // Keyboard navigation through the visible list.
+  const onKey = (e: React.KeyboardEvent) => {
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    e.preventDefault();
+    if (flat.length === 0) return;
+    const idx = flat.findIndex((b) => b.id === active);
+    const next =
+      e.key === "ArrowDown"
+        ? flat[(idx + 1) % flat.length]
+        : flat[(idx - 1 + flat.length) % flat.length];
+    if (next) FocusRegistry.setActive(next.id);
+  };
 
   return (
     <div
-      className={`pointer-events-none fixed left-6 top-1/2 z-30 -translate-y-1/2 transition-opacity duration-700 ${
-        visible ? "opacity-100" : "opacity-0"
+      className={`pointer-events-none fixed left-6 top-1/2 z-30 -translate-y-1/2 transition-all duration-700 ease-out ${
+        visible ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-3"
       }`}
     >
-      <div className="pointer-events-auto w-56 rounded-2xl border border-white/10 bg-black/45 p-4 backdrop-blur-md">
+      <div
+        className="pointer-events-auto w-60 rounded-2xl border border-white/10 bg-black/45 p-4 backdrop-blur-md focus-within:border-white/25 transition-colors"
+        onKeyDown={onKey}
+      >
         <div className="mb-3 flex items-center justify-between">
           <span className="text-[0.6rem] uppercase tracking-[0.4em] text-white/70">
             Explorer
@@ -60,7 +93,7 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="text-[0.6rem] uppercase tracking-[0.3em] text-white/40 hover:text-white"
+            className="rounded text-[0.6rem] uppercase tracking-[0.3em] text-white/40 outline-none transition-colors hover:text-white focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/40"
           >
             {open ? "Hide" : "Show"}
           </button>
@@ -68,38 +101,78 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
 
         {open && (
           <>
-            <div className="max-h-[60vh] space-y-3 overflow-y-auto pr-1">
-              {groups.map((g) => (
-                <div key={g.label}>
-                  <div className="mb-1 text-[0.55rem] uppercase tracking-[0.35em] text-white/40">
-                    {g.label}
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Jump to…"
+              aria-label="Quick jump"
+              className="mb-3 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[0.78rem] text-white placeholder-white/30 outline-none transition-colors focus:border-white/30"
+            />
+
+            <div
+              ref={listRef}
+              className="max-h-[55vh] space-y-3 overflow-y-auto pr-1 [scrollbar-width:thin]"
+            >
+              {groups.map((g) => {
+                const isCollapsed = collapsed[g.id];
+                const items = g.items.filter((b) =>
+                  query ? b.name.toLowerCase().includes(query.toLowerCase()) : true,
+                );
+                if (query && items.length === 0) return null;
+                return (
+                  <div key={g.id}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCollapsed((c) => ({ ...c, [g.id]: !c[g.id] }))
+                      }
+                      className="mb-1 flex w-full items-center justify-between rounded text-[0.55rem] uppercase tracking-[0.35em] text-white/45 outline-none transition-colors hover:text-white/80 focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/30"
+                      aria-expanded={!isCollapsed}
+                    >
+                      <span>{g.label}</span>
+                      <span className="text-white/30">
+                        {isCollapsed ? "+" : "−"}
+                      </span>
+                    </button>
+                    {!isCollapsed && (
+                      <ul className="space-y-0.5 animate-fade-in">
+                        {items.map((b) => {
+                          const isActive = active === b.id;
+                          return (
+                            <li key={b.id}>
+                              <button
+                                type="button"
+                                ref={isActive ? activeBtnRef : undefined}
+                                onClick={() => FocusRegistry.setActive(b.id)}
+                                aria-current={isActive ? "true" : undefined}
+                                className={`group flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[0.78rem] outline-none transition-all duration-200 focus-visible:ring-1 focus-visible:ring-white/40 ${
+                                  isActive
+                                    ? "bg-white/12 text-white"
+                                    : "text-white/65 hover:bg-white/5 hover:text-white hover:translate-x-0.5"
+                                }`}
+                              >
+                                <span
+                                  className={`h-1.5 w-1.5 shrink-0 rounded-full transition-all ${
+                                    isActive
+                                      ? "bg-sky-300 shadow-[0_0_8px_rgba(125,200,255,0.8)]"
+                                      : "bg-white/15 group-hover:bg-white/40"
+                                  }`}
+                                  aria-hidden
+                                />
+                                <span className="truncate">{b.name}</span>
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
                   </div>
-                  <ul className="space-y-0.5">
-                    {g.items.map((b) => {
-                      const isActive = active === b.id;
-                      return (
-                        <li key={b.id}>
-                          <button
-                            type="button"
-                            onClick={() => FocusRegistry.setActive(b.id)}
-                            className={`w-full rounded-md px-2 py-1.5 text-left text-[0.78rem] transition-colors ${
-                              isActive
-                                ? "bg-white/15 text-white"
-                                : "text-white/65 hover:bg-white/5 hover:text-white"
-                            }`}
-                          >
-                            {b.name}
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="mt-3 border-t border-white/10 pt-3">
-              <label className="flex cursor-pointer items-center justify-between text-[0.6rem] uppercase tracking-[0.3em] text-white/55">
+              <label className="flex cursor-pointer items-center justify-between text-[0.6rem] uppercase tracking-[0.3em] text-white/55 transition-colors hover:text-white">
                 <span>Orbit lines</span>
                 <input
                   type="checkbox"
@@ -110,6 +183,9 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
                   className="h-3 w-3 accent-white"
                 />
               </label>
+              <p className="mt-2 text-[0.55rem] tracking-[0.2em] text-white/30">
+                ↑ ↓ to navigate · Dbl-click in scene to focus
+              </p>
             </div>
           </>
         )}
