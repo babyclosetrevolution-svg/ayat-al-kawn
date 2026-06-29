@@ -76,10 +76,15 @@ class CameraDirectorImpl {
     const rec = FocusRegistry.get(key);
     if (!rec) return;
 
-    // Pick preset from catalog body type.
-    const bodies = CatalogManager.get("solar-system") ?? [];
-    const body = bodies.find((b) => b.id === key);
-    this.activePreset = pickPreset(body?.type);
+    // Pick preset by checking each catalog the focus might belong to.
+    const solar = CatalogManager.get("solar-system") ?? [];
+    const stars = CatalogManager.get("stars") ?? [];
+    const galaxies = CatalogManager.get("galaxies") ?? [];
+    const solarBody = solar.find((b) => b.id === key);
+    const starBody = stars.find((b) => b.id === key);
+    const galaxyBody = galaxies.find((g) => g.id === key);
+    const kind = galaxyBody ? "galaxy" : (solarBody?.type ?? starBody?.type);
+    this.activePreset = pickPreset(kind);
 
     // Preserve viewing direction; otherwise use preset elevation/offset.
     const fromCamera = new THREE.Vector3().subVectors(

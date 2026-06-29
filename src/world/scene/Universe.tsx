@@ -9,6 +9,7 @@ import { Sector } from "./Sector";
 import { Region } from "./Region";
 import { SolarSystem } from "./SolarSystem";
 import { StellarNeighborhood } from "./StellarNeighborhood";
+import { MilkyWayScene } from "./MilkyWayScene";
 
 /**
  * Universe — root of the astronomical scene graph.
@@ -90,6 +91,7 @@ export function Universe() {
 
   return (
     <Galaxy>
+      <MilkyWayScene />
       <Sector>
         <Region>
           {bodies && <SolarSystem bodies={bodies} />}

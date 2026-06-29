@@ -3,20 +3,25 @@ import { FocusRegistry, type FocusKey } from "../world/state/focus";
 import { VisibilityRegistry } from "../world/state/visibility";
 import { CatalogManager } from "../sim";
 import type { CelestialBodyData } from "../world/types/CelestialBody";
+import type { GalaxyData } from "../data/galaxy/milky-way";
 
 /**
  * ExplorerPanel — grouped, collapsible selector with keyboard navigation.
  *
- * Pure UI: reads the loaded solar-system catalog, writes selections into
- * the FocusRegistry. The camera and knowledge panels react on their own.
+ * Pure UI: reads the loaded catalogs (solar-system, stars, galaxies),
+ * writes selections into the FocusRegistry. The camera and knowledge
+ * panels react on their own.
  */
-type Group = { id: string; label: string; items: CelestialBodyData[] };
+type GroupItem = { id: string; name: string };
+type Group = { id: string; label: string; items: GroupItem[] };
 
 function groupBodies(
   bodies: CelestialBodyData[],
   stars: CelestialBodyData[],
+  galaxies: GalaxyData[],
 ): Group[] {
   return [
+    { id: "galaxy", label: "Galaxy", items: galaxies.map((g) => ({ id: g.id, name: g.name })) },
     { id: "star", label: "Local Star", items: bodies.filter((b) => b.type === "star") },
     { id: "planets", label: "Planets", items: bodies.filter((b) => b.type === "planet") },
     { id: "moons", label: "Moons", items: bodies.filter((b) => b.type === "moon") },
@@ -30,6 +35,9 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
   );
   const [stars, setStars] = useState<CelestialBodyData[]>(
     () => CatalogManager.get("stars") ?? [],
+  );
+  const [galaxies, setGalaxies] = useState<GalaxyData[]>(
+    () => CatalogManager.get("galaxies") ?? [],
   );
   const [active, setActive] = useState<FocusKey>(FocusRegistry.getActive());
   const [open, setOpen] = useState(true);
@@ -46,7 +54,10 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
     if (stars.length === 0) {
       CatalogManager.load("stars").then(setStars);
     }
-  }, [bodies.length, stars.length]);
+    if (galaxies.length === 0) {
+      CatalogManager.load("galaxies").then(setGalaxies);
+    }
+  }, [bodies.length, stars.length, galaxies.length]);
 
   useEffect(() => FocusRegistry.subscribe(setActive), []);
   useEffect(
@@ -62,7 +73,10 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
     });
   }, [active]);
 
-  const groups = useMemo(() => groupBodies(bodies, stars), [bodies, stars]);
+  const groups = useMemo(
+    () => groupBodies(bodies, stars, galaxies),
+    [bodies, stars, galaxies],
+  );
   const flat = useMemo(
     () =>
       groups.flatMap((g) =>
@@ -72,6 +86,7 @@ export function ExplorerPanel({ visible }: { visible: boolean }) {
       ),
     [groups, collapsed, query],
   );
+
 
   // Keyboard navigation through the visible list.
   const onKey = (e: React.KeyboardEvent) => {
