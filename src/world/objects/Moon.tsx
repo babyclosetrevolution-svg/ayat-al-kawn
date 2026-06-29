@@ -30,16 +30,26 @@ export function Moon({ data }: { data: CelestialBodyData }) {
     });
   }, [data, distance]);
 
+  // Science Engine — live orbit & rotation speed multipliers.
+  const [orbitSpeed] = useScienceParam(`${data.id}.orbitSpeed`, 1);
+  const [rotSpeed] = useScienceParam(`${data.id}.rotationSpeed`, 1);
+  const basePeriod = data.orbit?.period ?? data.rotationPeriod;
+  const effectiveOrbitPeriod =
+    orbitSpeed > 0 ? basePeriod / orbitSpeed : Number.POSITIVE_INFINITY;
+  const effectiveRotationPeriod =
+    rotSpeed > 0 ? data.rotationPeriod / rotSpeed : Number.POSITIVE_INFINITY;
+
   useOrbit(pivotRef, {
     parentId: data.orbit?.parentId ?? "",
     radius: distance,
-    period: data.orbit?.period ?? data.rotationPeriod,
+    period: effectiveOrbitPeriod,
     inclination: data.orbit?.inclination,
     phase,
-    enabled: Boolean(data.orbit),
+    enabled: Boolean(data.orbit) && orbitSpeed > 0,
   });
 
-  useRotation(meshRef, { period: data.rotationPeriod });
+  useRotation(meshRef, { period: effectiveRotationPeriod, enabled: rotSpeed > 0 });
+
 
   // Publish live world-space position for the camera each render frame.
   useFrame(() => {

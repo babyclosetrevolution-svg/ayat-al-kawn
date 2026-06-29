@@ -6,6 +6,8 @@ import { EmissiveStarMaterial } from "../materials/EmissiveStarMaterial";
 import { SolarCorona } from "../../render/SolarCorona";
 import { temperatureToColors } from "../../render/StarColor";
 import { useRotation } from "../../sim";
+import { useScienceParam } from "../../science/hooks/useScienceParam";
+
 
 /**
  * Star — generic emissive body.
