@@ -3,20 +3,25 @@ import { FocusRegistry, type FocusKey } from "../world/state/focus";
 import { VisibilityRegistry } from "../world/state/visibility";
 import { CatalogManager } from "../sim";
 import type { CelestialBodyData } from "../world/types/CelestialBody";
+import type { GalaxyData } from "../data/galaxy/milky-way";
 
 /**
  * ExplorerPanel — grouped, collapsible selector with keyboard navigation.
  *
- * Pure UI: reads the loaded solar-system catalog, writes selections into
- * the FocusRegistry. The camera and knowledge panels react on their own.
+ * Pure UI: reads the loaded catalogs (solar-system, stars, galaxies),
+ * writes selections into the FocusRegistry. The camera and knowledge
+ * panels react on their own.
  */
-type Group = { id: string; label: string; items: CelestialBodyData[] };
+type GroupItem = { id: string; name: string };
+type Group = { id: string; label: string; items: GroupItem[] };
 
 function groupBodies(
   bodies: CelestialBodyData[],
   stars: CelestialBodyData[],
+  galaxies: GalaxyData[],
 ): Group[] {
   return [
+    { id: "galaxy", label: "Galaxy", items: galaxies.map((g) => ({ id: g.id, name: g.name })) },
     { id: "star", label: "Local Star", items: bodies.filter((b) => b.type === "star") },
     { id: "planets", label: "Planets", items: bodies.filter((b) => b.type === "planet") },
     { id: "moons", label: "Moons", items: bodies.filter((b) => b.type === "moon") },
