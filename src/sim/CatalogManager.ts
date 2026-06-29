@@ -32,14 +32,32 @@ export interface CatalogTypeMap {
 }
 
 type Loader<K extends CatalogId> = () => Promise<CatalogTypeMap[K]>;
+type RegionLoader<K extends CatalogId> = (
+  regionId: string,
+) => Promise<CatalogTypeMap[K]>;
 
 class CatalogManagerImpl {
   private loaders = new Map<CatalogId, Loader<CatalogId>>();
+  private regionLoaders = new Map<CatalogId, RegionLoader<CatalogId>>();
   private cache = new Map<CatalogId, unknown>();
+  private regionCache = new Map<string, unknown>(); // key: `${id}::${region}`
   private inflight = new Map<CatalogId, Promise<unknown>>();
+  private listeners = new Set<() => void>();
 
   register<K extends CatalogId>(id: K, loader: Loader<K>): void {
     this.loaders.set(id, loader as Loader<CatalogId>);
+  }
+
+  /**
+   * Optional region-aware loader. Catalogs that don't define one fall
+   * back to returning the entire dataset for any region id, which is
+   * fine while datasets fit comfortably in memory.
+   */
+  registerRegionLoader<K extends CatalogId>(
+    id: K,
+    loader: RegionLoader<K>,
+  ): void {
+    this.regionLoaders.set(id, loader as RegionLoader<CatalogId>);
   }
 
   async load<K extends CatalogId>(id: K): Promise<CatalogTypeMap[K]> {
@@ -51,10 +69,27 @@ class CatalogManagerImpl {
     const p = loader().then((data) => {
       this.cache.set(id, data);
       this.inflight.delete(id);
+      for (const cb of this.listeners) cb();
       return data;
     });
     this.inflight.set(id, p);
     return p as Promise<CatalogTypeMap[K]>;
+  }
+
+  /** Region-scoped load. Falls back to the full catalog when no region loader exists. */
+  async loadRegion<K extends CatalogId>(
+    id: K,
+    regionId: string,
+  ): Promise<CatalogTypeMap[K]> {
+    const key = `${id}::${regionId}`;
+    if (this.regionCache.has(key))
+      return this.regionCache.get(key) as CatalogTypeMap[K];
+    const rl = this.regionLoaders.get(id);
+    const data = rl
+      ? ((await rl(regionId)) as CatalogTypeMap[K])
+      : await this.load(id);
+    this.regionCache.set(key, data);
+    return data;
   }
 
   /** Synchronous accessor for already-loaded catalogs. */
@@ -65,7 +100,17 @@ class CatalogManagerImpl {
   isLoaded(id: CatalogId): boolean {
     return this.cache.has(id);
   }
+
+  loadedCount(): number {
+    return this.cache.size;
+  }
+
+  subscribe(cb: () => void): () => void {
+    this.listeners.add(cb);
+    return () => this.listeners.delete(cb);
+  }
 }
+
 
 export const CatalogManager = new CatalogManagerImpl();
 
