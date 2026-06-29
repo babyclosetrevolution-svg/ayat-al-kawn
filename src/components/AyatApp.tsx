@@ -6,6 +6,7 @@ import { LoadingOverlay } from "../ui/LoadingOverlay";
 import { ExplorerPanel } from "../ui/ExplorerPanel";
 import { TitleBar } from "../ui/TitleBar";
 import { KnowledgePanel } from "../knowledge";
+import { MetricsOverlay } from "../metrics";
 
 /**
  * AyatApp — client-only composition root.
@@ -40,6 +41,7 @@ export function AyatApp() {
       <KnowledgePanel visible={exploring} />
       <TitleScreen visible={!loading && !exploring} onBegin={() => setExploring(true)} />
       <LoadingOverlay visible={loading} progress={progress} />
+      <MetricsOverlay />
     </div>
   );
 }
