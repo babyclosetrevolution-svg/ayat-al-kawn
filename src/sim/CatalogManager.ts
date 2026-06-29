@@ -73,3 +73,4 @@ export const CatalogManager = new CatalogManagerImpl();
 // Static dataset for now; will become an async fetch when the catalog
 // grows beyond what fits in a TypeScript module.
 CatalogManager.register("solar-system", async () => SOLAR_SYSTEM_BODIES);
+CatalogManager.register("stars", async () => STELLAR_NEIGHBORHOOD);
