@@ -31,6 +31,9 @@ export function Universe() {
   const [stars, setStars] = useState<CelestialBodyData[] | null>(
     CatalogManager.get("stars") ?? null,
   );
+  const [deepSky, setDeepSky] = useState<DeepSkyBodyData[] | null>(
+    CatalogManager.get("deep-sky") ?? null,
+  );
 
   useEffect(() => {
     let cancelled = false;
