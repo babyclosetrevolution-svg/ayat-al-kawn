@@ -138,15 +138,25 @@ class CameraDirectorImpl {
     }
 
     // Smooth easing — target leads, camera follows (anticipation).
-    const rate = this.reducedMotion ? 8 : this.activePreset.transitionRate;
-    const kCam = smoothK(rate, delta);
-    const kTarget = smoothK(rate * 1.8, delta);
+    // Rate is modulated by remaining travel: long journeys accelerate
+    // mid-flight, then naturally decelerate near the destination so the
+    // user perceives both the distance and the arrival.
+    const baseRate = this.reducedMotion ? 8 : this.activePreset.transitionRate;
+    const remaining = this.currentCamera.distanceTo(this.desiredCamera);
+    const settleScale = Math.max(0.0001, this.offsetLen);
+    const proximity = THREE.MathUtils.clamp(remaining / (settleScale * 6), 0, 1);
+    // Eased boost: x²(3-2x). Up to ~1.8× rate at long range, 1× near target.
+    const ease = proximity * proximity * (3 - 2 * proximity);
+    const travelRate = baseRate * (1 + ease * 0.8);
+    const kCam = smoothK(travelRate, delta);
+    const kTarget = smoothK(travelRate * 1.8, delta);
 
     this.currentTarget.lerp(this.desiredTarget, kTarget);
     this.currentCamera.lerp(this.desiredCamera, kCam);
 
-    // Smooth FOV blending.
-    const targetFov = this.activePreset.fov;
+    // Smooth FOV blending — slight widening during long travel so the
+    // sense of speed reads even in deep space.
+    const targetFov = this.activePreset.fov + ease * 4;
     this.currentFov += (targetFov - this.currentFov) * kCam;
 
     return {
