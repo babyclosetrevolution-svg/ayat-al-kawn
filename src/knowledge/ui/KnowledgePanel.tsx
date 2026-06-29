@@ -48,6 +48,14 @@ export function KnowledgePanel({ visible }: { visible: boolean }) {
   const open = ui.panels.knowledge === "open";
   const pinned = ui.pinned.knowledge;
   const [tab, setTab] = useState<TabId>("overview");
+  // Hide the Explore tab for bodies that have no registered experiences.
+  const hasExperiences = ExperienceRegistry.hasAny(id);
+  const availableTabs = TABS.filter((t) => t.id !== "explore" || hasExperiences);
+  // If the user is on a now-unavailable tab, fall back to Overview.
+  useEffect(() => {
+    if (!availableTabs.some((t) => t.id === tab)) setTab("overview");
+  }, [tab, availableTabs]);
+
   const firstRender = useRef(true);
 
   // New selection — surface the panel automatically on desktop (unless the
