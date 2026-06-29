@@ -7,6 +7,7 @@ import { ENGINE_CONFIG } from "../core/config";
 import { FocusRegistry, type FocusKey } from "../world/state/focus";
 import { CameraDirector } from "./camera/CameraDirector";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
+import { UIState } from "../ui/state/uiState";
 
 /**
  * CameraSystem — thin runtime around OrbitControls + CameraDirector.
@@ -42,11 +43,15 @@ export function CameraSystem() {
     };
   }, [persp]);
 
-  // User pointer activity → suppress idle drift briefly.
+  // User pointer activity → suppress idle drift briefly and notify UIState
+  // so floating panels fade out while the user is hand-flying the camera.
   useEffect(() => {
     const controls = controlsRef.current;
     if (!controls) return;
-    const onStart = () => CameraDirector.markInteraction();
+    const onStart = () => {
+      CameraDirector.markInteraction();
+      UIState.setActivity("navigating");
+    };
     const onChange = () => CameraDirector.markInteraction();
     controls.addEventListener("start", onStart);
     controls.addEventListener("change", onChange);
@@ -54,6 +59,12 @@ export function CameraSystem() {
       controls.removeEventListener("start", onStart);
       controls.removeEventListener("change", onChange);
     };
+  }, []);
+
+  // Focus changes — the Director is about to fly the camera. Treat as a
+  // cinematic transition so the rest of the UI gets out of the way.
+  useEffect(() => {
+    return FocusRegistry.subscribe(() => UIState.setActivity("cinematic"));
   }, []);
 
   // Double-click → focus the clicked celestial body.
