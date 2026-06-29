@@ -44,6 +44,7 @@ export function AyatApp() {
       <TitleScreen visible={!loading && !exploring} onBegin={() => setExploring(true)} />
       <LoadingOverlay visible={loading} progress={progress} />
       <MetricsOverlay />
+      <Toaster />
     </div>
   );
 }
