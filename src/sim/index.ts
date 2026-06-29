@@ -12,3 +12,8 @@ export { useOrbit, type OrbitConfig } from "./components/OrbitComponent";
 export { ScaleManager, type ScaleDescriptor } from "./ScaleManager";
 export { CatalogManager, type CatalogId, type CatalogTypeMap } from "./CatalogManager";
 export { HIERARCHY_ORDER, type HierarchyLevel } from "./hierarchy";
+export {
+  stellarPositionToScene,
+  compressDistance,
+  type StellarCoordinates,
+} from "./coords/stellar";
