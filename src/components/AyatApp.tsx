@@ -29,6 +29,7 @@ import "../encyclopedia/seed";
 export function AyatApp() {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [awakening, setAwakening] = useState(false);
   const [exploring, setExploring] = useState(false);
 
   useEffect(() => {
@@ -44,18 +45,34 @@ export function AyatApp() {
     return () => cancelAnimationFrame(raf);
   }, []);
 
+  const handleBegin = () => {
+    if (AwakeningState.hasSeen()) setExploring(true);
+    else setAwakening(true);
+  };
+  const handleAwakeningDone = () => {
+    setAwakening(false);
+    setExploring(true);
+  };
+  const handleReplayAwakening = () => {
+    AwakeningState.replay();
+    setExploring(false);
+    setAwakening(true);
+  };
+
   return (
     <div className="fixed inset-0 bg-black text-white">
-      <Engine>
-        <WorldScene />
-        <CameraAttachment />
-      </Engine>
+      {!awakening && (
+        <Engine>
+          <WorldScene />
+          <CameraAttachment />
+        </Engine>
+      )}
       <AudioBridge />
       <ObserverHUD visible={exploring} />
       <TitleBar visible={exploring} />
       <ExplorerPanel visible={exploring} />
       <KnowledgePanel visible={exploring} />
-      <TitleScreen visible={!loading && !exploring} onBegin={() => setExploring(true)} />
+      <TitleScreen visible={!loading && !exploring && !awakening} onBegin={handleBegin} />
       <LoadingOverlay visible={loading} progress={progress} />
       <MetricsOverlay />
       <ComparisonOverlay />
@@ -69,11 +86,24 @@ export function AyatApp() {
           <ContemplationLauncher />
           <ContemplationOverlay />
           <AudioSettingsPanel />
+          <button
+            type="button"
+            onClick={handleReplayAwakening}
+            className="pointer-events-auto fixed bottom-3 left-3 z-30 rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[0.55rem] uppercase tracking-[0.3em] text-white/50 backdrop-blur-md transition-colors hover:border-white/30 hover:text-white/80"
+          >
+            Replay awakening
+          </button>
         </>
       )}
+      {awakening && (
+        <AwakeningOverlay
+          onComplete={handleAwakeningDone}
+          onSkip={handleAwakeningDone}
+        />
+      )}
       <Toaster />
-
     </div>
   );
 }
+
 
