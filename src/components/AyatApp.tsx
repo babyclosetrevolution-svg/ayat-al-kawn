@@ -50,6 +50,7 @@ export function AyatApp() {
         <CameraAttachment />
       </Engine>
       <AudioBridge />
+      <ObserverHUD visible={exploring} />
       <TitleBar visible={exploring} />
       <ExplorerPanel visible={exploring} />
       <KnowledgePanel visible={exploring} />
