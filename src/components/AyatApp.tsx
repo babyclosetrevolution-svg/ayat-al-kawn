@@ -14,6 +14,7 @@ import { AudioBridge, AudioSettingsPanel } from "../audio";
 import { JourneyPicker, JourneyPlayer } from "../journeys";
 import { AssistantPanel } from "../assistant";
 import { ContemplationLauncher, ContemplationOverlay } from "../contemplation";
+import { CameraAttachment, ObserverHUD } from "../observer";
 import "../discovery";
 import "../exploration";
 import "../encyclopedia/seed";
@@ -46,8 +47,10 @@ export function AyatApp() {
     <div className="fixed inset-0 bg-black text-white">
       <Engine>
         <WorldScene />
+        <CameraAttachment />
       </Engine>
       <AudioBridge />
+      <ObserverHUD visible={exploring} />
       <TitleBar visible={exploring} />
       <ExplorerPanel visible={exploring} />
       <KnowledgePanel visible={exploring} />
