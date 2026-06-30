@@ -32,9 +32,7 @@ export function ObserverHUD({ visible = true }: { visible?: boolean }) {
 
   if (!visible) return null;
 
-  const focusEntry = state.awareness.focus
-    ? KnowledgeRegistry.get(state.awareness.focus)
-    : undefined;
+  const focusEntry = KnowledgeRegistry.resolve(state.awareness.focus);
   const targetLabel = focusEntry?.title ?? state.awareness.focus ?? "—";
 
   return (
