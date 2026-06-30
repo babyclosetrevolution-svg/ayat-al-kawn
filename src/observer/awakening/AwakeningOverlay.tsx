@@ -154,10 +154,7 @@ export function AwakeningOverlay({ onComplete, onSkip }: Props) {
       className="fixed inset-0 z-[60] cursor-none select-none bg-black"
     >
       {showCanvas && (
-        <div
-          className="absolute inset-0 transition-opacity duration-[2200ms]"
-          style={{ opacity: phase === "fade-in" ? 0 : 1 }}
-        >
+        <div className="absolute inset-0 opacity-100 transition-opacity duration-[2200ms]">
           <AwakeningScene
             sunReveal={sunReveal}
             activeBeacon={activeBeacon}
