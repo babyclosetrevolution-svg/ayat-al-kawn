@@ -3,8 +3,7 @@ import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { AwakeningStars, DistantSun } from "./AwakeningStars";
 import { BeaconField, makeBeacons, type BeaconSpec } from "./BeaconField";
-import { FlightController, bindInputs, type InputBindingHandle } from "../flight";
-import { AWAKENING_STAGES, type StageContext } from "./stages";
+import { FlightController, type InputBindingHandle } from "../flight";
 import { Observer } from "../core/Observer";
 import type { ObserverMode } from "../types";
 

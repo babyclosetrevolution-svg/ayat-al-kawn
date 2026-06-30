@@ -15,6 +15,7 @@ import { JourneyPicker, JourneyPlayer } from "../journeys";
 import { AssistantPanel } from "../assistant";
 import { ContemplationLauncher, ContemplationOverlay } from "../contemplation";
 import { CameraAttachment, ObserverHUD } from "../observer";
+import { AwakeningOverlay, AwakeningState } from "../observer/awakening";
 import "../discovery";
 import "../exploration";
 import "../encyclopedia/seed";

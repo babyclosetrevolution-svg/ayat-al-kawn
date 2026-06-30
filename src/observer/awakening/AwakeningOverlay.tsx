@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FlightController, bindInputs, MotionSettingsStore } from "../flight";
+import { FlightController, bindInputs } from "../flight";
 import { AWAKENING_STAGES, type StageContext } from "./stages";
 import { AwakeningScene, useBeacons } from "./AwakeningScene";
 import { HintBanner } from "./HintBanner";
