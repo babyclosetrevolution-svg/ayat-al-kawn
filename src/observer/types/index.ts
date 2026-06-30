@@ -13,9 +13,13 @@ import type { FocusKey } from "../../world/state/focus";
 
 export type ObserverMode =
   | "idle"
+  | "learning"
+  | "cruise"
+  | "precision"
   | "observe"
   | "travel"
   | "inspect"
+  | "boost"
   | "journey"
   | "contemplation";
 
