@@ -45,25 +45,25 @@ export const AWAKENING_STAGES: AwakeningStage[] = [
   },
   {
     id: "move",
-    hint: "Move forward — press W or ↑",
+    hint: "Move forward",
     done: (c) => c.input.forward > 0 && c.elapsed > 1.2,
     minDwellMs: 2200,
   },
   {
     id: "look",
-    hint: "Look around — move the mouse",
+    hint: "Look around",
     done: (c) => c.rotated > 0.9,
     minDwellMs: 2000,
   },
   {
     id: "slow",
-    hint: "Slow down — release the keys, or press X to brake",
+    hint: "Come to rest",
     done: (c) => c.speed < 0.6 && c.elapsed > 1.8,
     minDwellMs: 2400,
   },
   {
     id: "free",
-    hint: "Glide freely — W A S D, E and Q",
+    hint: "Glide freely — in every direction",
     done: (c) =>
       (Math.abs(c.input.strafe) > 0 || c.input.vertical !== 0) && c.elapsed > 2,
     minDwellMs: 2800,
@@ -76,7 +76,7 @@ export const AWAKENING_STAGES: AwakeningStage[] = [
   },
   {
     id: "approach",
-    hint: "Approach the light — hold Shift to boost",
+    hint: "Approach the light",
     done: (c) => c.nearestBeaconDistance < 18,
     minDwellMs: 2400,
   },
@@ -87,3 +87,43 @@ export const AWAKENING_STAGES: AwakeningStage[] = [
     minDwellMs: 3600,
   },
 ];
+
+/**
+ * Device-adaptive help copy displayed after prolonged inactivity. The
+ * onboarding never demands a specific key — it demands an ACTION — but if
+ * the user seems stuck we hint at how to satisfy it on their platform.
+ */
+export const STAGE_HELP: Record<string, { desktop: string; touch: string }> = {
+  awaken: {
+    desktop: "Take your time. The Universe is patient.",
+    touch: "Take your time. The Universe is patient.",
+  },
+  move: {
+    desktop: "Press W or the up arrow to drift forward.",
+    touch: "Push the left thumbstick upward to drift forward.",
+  },
+  look: {
+    desktop: "Click and drag anywhere to look around.",
+    touch: "Drag the right side of the screen to look around.",
+  },
+  slow: {
+    desktop: "Release the movement keys, or press X to brake.",
+    touch: "Release the thumbstick, or tap Brake.",
+  },
+  free: {
+    desktop: "Try A, D, Q or E to slide sideways and vertically.",
+    touch: "Push the thumbstick in any direction.",
+  },
+  focus: {
+    desktop: "Look until a warm light enters your view.",
+    touch: "Drag to look until a warm light appears.",
+  },
+  approach: {
+    desktop: "Hold Shift to boost toward the light.",
+    touch: "Hold Boost while pushing forward.",
+  },
+  observe: {
+    desktop: "Stop moving. Simply watch.",
+    touch: "Release the controls. Simply watch.",
+  },
+};
