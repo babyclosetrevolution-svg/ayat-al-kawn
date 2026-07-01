@@ -43,7 +43,7 @@ export function BeaconField({
   beacons: BeaconSpec[];
   activeIndex: number;
 }) {
-  const groupRef = useRef<THREE.Group>(null);
+  const coreRefs = useRef<Array<THREE.Mesh | null>>([]);
   const mats = useMemo(
     () =>
       beacons.map(
@@ -61,26 +61,31 @@ export function BeaconField({
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
-    const group = groupRef.current;
-    if (!group) return;
-    group.children.forEach((child, i) => {
+    for (let i = 0; i < beacons.length; i++) {
+      const mesh = coreRefs.current[i];
+      const m = mats[i];
+      if (!mesh || !m) continue;
       const isActive = i === activeIndex;
       const pulse = 0.65 + Math.sin(t * 1.3 + i * 1.7) * 0.18;
-      const scale = (isActive ? 1.7 : 1) * pulse;
-      child.scale.setScalar(scale);
-      const m = mats[i];
+      mesh.scale.setScalar((isActive ? 1.7 : 1) * pulse);
       m.opacity = isActive ? 0.95 : 0.55;
-    });
+    }
   });
 
   return (
-    <group ref={groupRef}>
+    <group>
       {beacons.map((b, i) => (
-        <mesh key={i} position={b.position} material={mats[i]}>
+        <mesh
+          key={`core-${i}`}
+          ref={(el) => {
+            coreRefs.current[i] = el;
+          }}
+          position={b.position}
+          material={mats[i]}
+        >
           <sphereGeometry args={[1.2, 16, 16]} />
         </mesh>
       ))}
-      {/* Soft halos */}
       {beacons.map((b, i) => (
         <mesh key={`halo-${i}`} position={b.position}>
           <sphereGeometry args={[4.5, 16, 16]} />
