@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { hexToRgb, rng, seedFromId, type DeepSkyRendererProps } from "./shared";
+import { getSoftGlowTexture } from "./glowTexture";
 
 /**
  * DeepSkySupernovaRemnant — expanding shell + radial filaments.
@@ -141,6 +142,7 @@ export function DeepSkySupernovaRemnant({ data }: DeepSkyRendererProps) {
       {/* Central hot core */}
       <sprite scale={[radius * 0.8, radius * 0.8, 1]}>
         <spriteMaterial
+          map={getSoftGlowTexture() ?? undefined}
           color={new THREE.Color(0.7, 0.9, 1)}
           transparent
           opacity={0.5}

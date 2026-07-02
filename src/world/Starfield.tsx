@@ -185,12 +185,15 @@ function MilkyWayHaze({
             // Galactic plane along Y ~ 0 (rotated to feel oblique).
             vec3 d = normalize(vDir);
             float plane = 1.0 - abs(d.y * 1.4 + d.x * 0.25);
-            plane = smoothstep(0.4, 1.0, plane);
-            // Lumpy clouds along the band.
+            // Tighter band, softer falloff — the Milky-Way is a hint,
+            // never a wash of colour across the whole sky.
+            plane = smoothstep(0.72, 1.0, plane);
             float clouds = noise(d * 5.0) * 0.6 + noise(d * 13.0) * 0.4;
-            float v = plane * (0.35 + 0.65 * clouds) * uIntensity;
-            vec3 warm = mix(vec3(0.18, 0.12, 0.22), vec3(0.55, 0.42, 0.35), clouds);
-            gl_FragColor = vec4(warm * v, v);
+            float v = plane * (0.25 + 0.55 * clouds) * uIntensity;
+            // Cool interstellar tint: deep indigo shading to a soft
+            // dust-white in the densest lanes. No warm brown ever.
+            vec3 col = mix(vec3(0.05, 0.06, 0.11), vec3(0.28, 0.30, 0.42), clouds);
+            gl_FragColor = vec4(col * v, v);
           }
         `}
       />
