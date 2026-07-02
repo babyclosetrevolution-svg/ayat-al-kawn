@@ -11,6 +11,7 @@ import {
 } from "../../sim/coords/galactic";
 import { FocusRegistry } from "../state/focus";
 import { SpatialPartition, StreamingManager } from "../../streaming";
+import { getSoftGlowTexture } from "./deepsky/glowTexture";
 
 /**
  * MilkyWayGalaxy — procedural points renderer (Phase 11.5 refinement).
@@ -158,12 +159,16 @@ export function MilkyWayGalaxy({ data }: { data: GalaxyData }) {
       <points geometry={bulgeGeom} material={bulgeMaterial} />
 
       {/* Layered galactic-core glow — three additive billboards stack
-          into a volumetric, bloom-friendly luminous heart. */}
+          into a volumetric, bloom-friendly luminous heart. A shared
+          soft radial-gradient map keeps each sprite feathered; without
+          it, `spriteMaterial` renders as a solid additive quad and
+          washes the whole sky warm. */}
       <sprite scale={[bulgeR * 8, bulgeR * 8, 1]}>
         <spriteMaterial
+          map={getSoftGlowTexture() ?? undefined}
           color={new THREE.Color(0.9, 0.7, 0.5)}
           transparent
-          opacity={0.08}
+          opacity={0.06}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
           toneMapped={false}
@@ -171,9 +176,10 @@ export function MilkyWayGalaxy({ data }: { data: GalaxyData }) {
       </sprite>
       <sprite scale={[bulgeR * 3.6, bulgeR * 3.6, 1]}>
         <spriteMaterial
+          map={getSoftGlowTexture() ?? undefined}
           color={new THREE.Color(1.0, 0.82, 0.6)}
           transparent
-          opacity={0.22}
+          opacity={0.18}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
           toneMapped={false}
@@ -181,9 +187,10 @@ export function MilkyWayGalaxy({ data }: { data: GalaxyData }) {
       </sprite>
       <sprite scale={[bulgeR * 1.6, bulgeR * 1.6, 1]}>
         <spriteMaterial
+          map={getSoftGlowTexture() ?? undefined}
           color={new THREE.Color(1.0, 0.95, 0.82)}
           transparent
-          opacity={0.55}
+          opacity={0.5}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
           toneMapped={false}
