@@ -77,10 +77,10 @@ export const RENDER_CONFIG: RenderConfig = {
     enabled: true,
     // Restrained bloom: only true highlights (stars, Sun) should bleed.
     // Higher threshold + lower intensity keeps deep space genuinely dark.
-    intensity: 0.38,
-    luminanceThreshold: 0.86,
-    luminanceSmoothing: 0.25,
-    radius: 0.72,
+    intensity: 0.28,
+    luminanceThreshold: 0.9,
+    luminanceSmoothing: 0.2,
+    radius: 0.5,
     resolutionScale: 0.5,
   },
   star: {
