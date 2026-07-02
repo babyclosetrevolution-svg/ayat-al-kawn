@@ -75,10 +75,12 @@ export const RENDER_CONFIG: RenderConfig = {
   },
   bloom: {
     enabled: true,
-    intensity: 0.55,
-    luminanceThreshold: 0.72,
-    luminanceSmoothing: 0.3,
-    radius: 0.7,
+    // Restrained bloom: only true highlights (stars, Sun) should bleed.
+    // Higher threshold + lower intensity keeps deep space genuinely dark.
+    intensity: 0.38,
+    luminanceThreshold: 0.86,
+    luminanceSmoothing: 0.25,
+    radius: 0.72,
     resolutionScale: 0.5,
   },
   star: {
@@ -98,8 +100,10 @@ export const RENDER_CONFIG: RenderConfig = {
   },
   starfield: {
     densityFactor: 1.6,
-    milkyWayIntensity: 0.55,
-    dustIntensity: 0.18,
+    // The Milky-Way haze and dust were washing the sky brown. Kept as a
+    // very faint suggestion of the galactic plane against black space.
+    milkyWayIntensity: 0.18,
+    dustIntensity: 0.05,
   },
   ambient: {
     intensity: 0.012,

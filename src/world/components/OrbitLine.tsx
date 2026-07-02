@@ -21,8 +21,10 @@ interface Props {
 
 export function OrbitLine({
   radius,
-  color = "#9bbcff",
-  opacity = 0.18,
+  color = "#7ea6d6",
+  // Kept intentionally faint — orbits are a secondary readout, never a
+  // graphic element competing with the bodies themselves.
+  opacity = 0.09,
   segments = 256,
   inclination = 0,
 }: Props) {

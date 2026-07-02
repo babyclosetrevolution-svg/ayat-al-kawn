@@ -17,7 +17,10 @@ interface TargetRecord {
 
 class FocusRegistryImpl {
   private targets = new Map<string, TargetRecord>();
-  private active: FocusKey = "earth";
+  // No default focus — landing page must open in silence, with no UI
+  // halo drawn around any body. A focus is only set when the user picks
+  // one (Explorer panel, Discovery card, camera preset, etc.).
+  private active: FocusKey = null;
   private listeners = new Set<(k: FocusKey) => void>();
 
   register(key: string, record: TargetRecord) {
