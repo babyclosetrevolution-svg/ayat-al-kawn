@@ -57,9 +57,12 @@ export function PostFX() {
             intensity={cfg.intensity}
             luminanceThreshold={cfg.luminanceThreshold}
             luminanceSmoothing={cfg.luminanceSmoothing}
-            mipmapBlur
+            // NOTE: mipmapBlur is intentionally OFF. When the Sun sits in
+            // frame its HDR emissive lifted the smallest mip and washed
+            // the entire background to a warm beige. A fixed-kernel blur
+            // keeps bloom local to bright sources — deep space stays black.
             radius={cfg.radius}
-            kernelSize={KernelSize.LARGE}
+            kernelSize={KernelSize.MEDIUM}
             resolutionScale={cfg.resolutionScale}
           />
         </EffectComposer>
