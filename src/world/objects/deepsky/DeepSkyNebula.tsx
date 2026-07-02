@@ -94,7 +94,7 @@ export function DeepSkyNebula({ data }: DeepSkyRendererProps) {
   const material = useMemo(
     () =>
       new THREE.MeshBasicMaterial({
-        map: PUFF_TEXTURE,
+        map: getPuffTexture(),
         color: 0xffffff,
         transparent: true,
         opacity: 0.18,
