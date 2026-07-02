@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { hexToRgb, rng, seedFromId, type DeepSkyRendererProps } from "./shared";
+import { getSoftGlowTexture } from "./glowTexture";
 
 /**
  * DeepSkyNebula — additive instanced billboards.
@@ -11,12 +12,17 @@ import { hexToRgb, rng, seedFromId, type DeepSkyRendererProps } from "./shared";
  * lines for variation. Cheap and bloom-friendly; LOD attenuates count
  * and per-instance opacity with camera distance.
  */
-const PUFF_TEXTURE = (() => {
+// Puff texture is created on first client render (never during SSR),
+// then cached so every nebula instance shares the same GPU resource.
+let PUFF_TEXTURE: THREE.CanvasTexture | null = null;
+function getPuffTexture(): THREE.CanvasTexture | null {
   if (typeof document === "undefined") return null;
+  if (PUFF_TEXTURE) return PUFF_TEXTURE;
   const size = 128;
   const c = document.createElement("canvas");
   c.width = c.height = size;
-  const ctx = c.getContext("2d")!;
+  const ctx = c.getContext("2d");
+  if (!ctx) return null;
   const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
   g.addColorStop(0, "rgba(255,255,255,1)");
   g.addColorStop(0.4, "rgba(255,255,255,0.45)");
@@ -25,8 +31,9 @@ const PUFF_TEXTURE = (() => {
   ctx.fillRect(0, 0, size, size);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
-  return t;
-})();
+  PUFF_TEXTURE = t;
+  return PUFF_TEXTURE;
+}
 
 export function DeepSkyNebula({ data }: DeepSkyRendererProps) {
   const groupRef = useRef<THREE.Group>(null);
@@ -159,6 +166,7 @@ export function DeepSkyNebula({ data }: DeepSkyRendererProps) {
       {/* Soft core glow */}
       <sprite scale={[radius * 1.4, radius * 1.4, 1]}>
         <spriteMaterial
+          map={getSoftGlowTexture() ?? undefined}
           color={new THREE.Color(baseColor)}
           transparent
           opacity={0.35}

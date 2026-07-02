@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { hexToRgb, rng, seedFromId, galaxyFormFor, type DeepSkyRendererProps } from "./shared";
+import { getSoftGlowTexture } from "./glowTexture";
 
 /**
  * DeepSkyGalaxy — procedural points renderer for catalog galaxies.
@@ -251,6 +252,7 @@ export function DeepSkyGalaxy({ data }: DeepSkyRendererProps) {
           scale={[layer.scale, layer.scale, 1]}
         >
           <spriteMaterial
+            map={getSoftGlowTexture() ?? undefined}
             color={new THREE.Color(layer.rgb[0], layer.rgb[1], layer.rgb[2])}
             transparent
             opacity={layer.opacity}
