@@ -145,7 +145,7 @@ export function DeepSkySupernovaRemnant({ data }: DeepSkyRendererProps) {
           map={getSoftGlowTexture() ?? undefined}
           color={new THREE.Color(0.7, 0.9, 1)}
           transparent
-          opacity={0.5}
+          opacity={0.28}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
           toneMapped={false}
