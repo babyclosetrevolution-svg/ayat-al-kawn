@@ -3,10 +3,14 @@ import { AudioEngine } from "../engine/AudioEngine";
 import { AmbienceRegistry } from "../registry/ambienceRegistry";
 import { FocusRegistry } from "../../world/state/focus";
 import { CatalogManager } from "../../sim";
+import { PresenceEngine } from "../../observer/presence/PresenceEngine";
 
 /**
  * AudioBridge — listens to focus changes and swaps the active ambient
- * layer set with a natural crossfade. Pure side-effect component; no DOM.
+ * layer set with a natural crossfade. Also feeds the PresenceEngine's
+ * motion signal into the AudioEngine's presence bus so slow flight
+ * feels deeper and fast flight opens up harmonically. Pure side-effect
+ * component; no DOM.
  */
 export function AudioBridge() {
   useEffect(() => {
