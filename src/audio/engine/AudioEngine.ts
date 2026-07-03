@@ -31,6 +31,14 @@ const DEFAULTS: AudioSettings = {
 class AudioEngineImpl {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
+  /**
+   * Presence bus — a single BiquadFilter inserted between the master
+   * gain and the destination. Its cutoff frequency is animated by the
+   * PresenceEngine so slow flight sounds deeper (low cutoff) and fast
+   * flight opens up (brighter harmonics). No new music, no new layers.
+   */
+  private presenceFilter: BiquadFilterNode | null = null;
+  private presenceBias = 0; // 0 = deep drone, 1 = fully open
   private channels = new Map<AudioChannel, GainNode>();
   private active = new Map<string, ActiveLayer>();
   private settings: AudioSettings = { ...DEFAULTS };
@@ -64,7 +72,12 @@ class AudioEngineImpl {
       this.ctx = new Ctx();
       if (this.ctx.state === "suspended") await this.ctx.resume();
       this.master = this.ctx.createGain();
-      this.master.connect(this.ctx.destination);
+      this.presenceFilter = this.ctx.createBiquadFilter();
+      this.presenceFilter.type = "lowpass";
+      this.presenceFilter.Q.value = 0.4;
+      this.presenceFilter.frequency.value = this.cutoffFromBias(this.presenceBias);
+      this.master.connect(this.presenceFilter);
+      this.presenceFilter.connect(this.ctx.destination);
       for (const ch of ["music", "ambience", "effects"] as AudioChannel[]) {
         const g = this.ctx.createGain();
         g.connect(this.master);
@@ -90,6 +103,28 @@ class AudioEngineImpl {
       node.gain.value = this.channelGain(ch);
     }
   }
+
+  private cutoffFromBias(bias: number): number {
+    // Deep drone at rest (~450 Hz) → open harmonics at journey speeds
+    // (~5.5 kHz). Below musical brightness so nothing new is introduced.
+    return 450 + bias * 5100;
+  }
+
+  /**
+   * Presence bias in [0, 1] — mapped from the PresenceEngine layer.
+   * Smoothly animates the master lowpass cutoff. Safe to call every
+   * frame; the transition uses Web Audio's own ramp so no JS jitter.
+   */
+  setPresenceBias(bias: number): void {
+    const b = Math.max(0, Math.min(1, bias));
+    this.presenceBias = b;
+    if (!this.ctx || !this.presenceFilter) return;
+    const target = this.cutoffFromBias(b);
+    const now = this.ctx.currentTime;
+    this.presenceFilter.frequency.cancelScheduledValues(now);
+    this.presenceFilter.frequency.setTargetAtTime(target, now, 1.8);
+  }
+
 
   /** Replace the active layer set with `layers`, crossfading. */
   setActiveLayers(layers: AmbientLayerSpec[]): void {
