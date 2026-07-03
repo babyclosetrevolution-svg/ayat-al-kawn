@@ -229,9 +229,11 @@ export function DeepSkyGalaxy({ data }: DeepSkyRendererProps) {
 
   const bulgeR = radius * (form === "elliptical" ? 0.85 : 0.28);
   const coreLayers: { scale: number; rgb: [number, number, number]; opacity: number }[] = [
-    { scale: bulgeR * 8, rgb: corePalette[0], opacity: 0.08 },
-    { scale: bulgeR * 3.6, rgb: corePalette[1], opacity: 0.22 },
-    { scale: bulgeR * 1.6, rgb: corePalette[2], opacity: 0.55 },
+    // Removed the 8x outer halo — at galactic distances it stacked with the
+    // background haze and lifted the sky. Two tighter tiers keep the core
+    // luminous without bleeding into deep space.
+    { scale: bulgeR * 3.2, rgb: corePalette[1], opacity: 0.12 },
+    { scale: bulgeR * 1.4, rgb: corePalette[2], opacity: 0.32 },
   ];
 
   return (

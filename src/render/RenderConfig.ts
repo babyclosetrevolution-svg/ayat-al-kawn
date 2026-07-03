@@ -68,26 +68,28 @@ export interface RenderConfig {
 
 export const RENDER_CONFIG: RenderConfig = {
   exposure: {
-    base: 0.92,
-    min: 0.5,
-    max: 1.18,
+    // Slightly closed base + tighter range so the black point never lifts.
+    base: 0.85,
+    min: 0.45,
+    max: 1.05,
     rate: 0.5,
   },
   bloom: {
     enabled: true,
     // Restrained bloom: only true highlights (stars, Sun) should bleed.
-    // Higher threshold + lower intensity keeps deep space genuinely dark.
-    intensity: 0.28,
-    luminanceThreshold: 0.9,
-    luminanceSmoothing: 0.2,
-    radius: 0.5,
+    // Higher threshold keeps deep space genuinely dark; low intensity so
+    // bloom becomes a subtle halo, never a fullscreen wash.
+    intensity: 0.2,
+    luminanceThreshold: 0.95,
+    luminanceSmoothing: 0.15,
+    radius: 0.4,
     resolutionScale: 0.5,
   },
   star: {
-    coronaScale: 2.2,
+    coronaScale: 2.0,
     coronaColor: "#ffd089",
-    glareScale: 4.8,
-    glareOpacity: 0.22,
+    glareScale: 4.2,
+    glareOpacity: 0.16,
   },
   atmosphere: {
     segments: 96,
@@ -99,14 +101,16 @@ export const RENDER_CONFIG: RenderConfig = {
     radialSegments: 224,
   },
   starfield: {
-    densityFactor: 1.6,
-    // The Milky-Way haze and dust were washing the sky brown. Kept as a
-    // very faint suggestion of the galactic plane against black space.
-    milkyWayIntensity: 0.18,
-    dustIntensity: 0.05,
+    densityFactor: 1.2,
+    // Milky-Way and dust are a bare hint against pure black — never a
+    // colour wash. If in doubt, lower these before touching bloom.
+    milkyWayIntensity: 0.09,
+    dustIntensity: 0.025,
   },
   ambient: {
-    intensity: 0.012,
-    color: "#7a8aa6",
+    // Below perceptual threshold on calibrated monitors — the dark side
+    // of a body reads as space, not as a lit sphere.
+    intensity: 0.006,
+    color: "#6a7a96",
   },
 };

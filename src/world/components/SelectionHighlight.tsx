@@ -35,8 +35,8 @@ export function SelectionHighlight() {
 
     // Always face the camera; very gentle breathing pulse.
     ring.lookAt(state.camera.position);
-    const pulse = 0.45 + Math.sin(state.clock.elapsedTime * 0.9) * 0.06;
-    mat.opacity = rec ? pulse * 0.22 : 0;
+    const pulse = 0.4 + Math.sin(state.clock.elapsedTime * 0.9) * 0.05;
+    mat.opacity = rec ? pulse * 0.14 : 0;
   });
 
   return (
