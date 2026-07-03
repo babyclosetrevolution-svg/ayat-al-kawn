@@ -163,34 +163,27 @@ export function MilkyWayGalaxy({ data }: { data: GalaxyData }) {
           soft radial-gradient map keeps each sprite feathered; without
           it, `spriteMaterial` renders as a solid additive quad and
           washes the whole sky warm. */}
-      <sprite scale={[bulgeR * 8, bulgeR * 8, 1]}>
+      {/* Two-tier core glow. The outermost 8x halo was lifting the sky
+          warm across the whole viewport at galactic distances; removed.
+          Remaining sprites are tighter and dimmer — a hint of a bright
+          nucleus, not a fullscreen wash. */}
+      <sprite scale={[bulgeR * 3.0, bulgeR * 3.0, 1]}>
         <spriteMaterial
           map={getSoftGlowTexture() ?? undefined}
-          color={new THREE.Color(0.9, 0.7, 0.5)}
+          color={new THREE.Color(0.95, 0.82, 0.65)}
           transparent
-          opacity={0.06}
+          opacity={0.08}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
           toneMapped={false}
         />
       </sprite>
-      <sprite scale={[bulgeR * 3.6, bulgeR * 3.6, 1]}>
+      <sprite scale={[bulgeR * 1.4, bulgeR * 1.4, 1]}>
         <spriteMaterial
           map={getSoftGlowTexture() ?? undefined}
-          color={new THREE.Color(1.0, 0.82, 0.6)}
+          color={new THREE.Color(1.0, 0.95, 0.85)}
           transparent
-          opacity={0.18}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-          toneMapped={false}
-        />
-      </sprite>
-      <sprite scale={[bulgeR * 1.6, bulgeR * 1.6, 1]}>
-        <spriteMaterial
-          map={getSoftGlowTexture() ?? undefined}
-          color={new THREE.Color(1.0, 0.95, 0.82)}
-          transparent
-          opacity={0.5}
+          opacity={0.28}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
           toneMapped={false}
