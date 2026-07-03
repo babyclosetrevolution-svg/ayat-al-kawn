@@ -34,8 +34,21 @@ export function AudioBridge() {
 
     const off = FocusRegistry.subscribe(() => applyForCurrentFocus());
     applyForCurrentFocus();
+
+    // Bridge PresenceEngine → AudioEngine. Bias 0 = deep drone, 1 = open
+    // harmonics. Mapped conservatively so contemplation stays warm and
+    // journey never becomes bright music, only slightly less filtered.
+    const offPresence = PresenceEngine.subscribe((p) => {
+      const bias =
+        p.layer === "contemplation" ? 0 :
+        p.layer === "exploration" ? 0.35 :
+        0.75;
+      AudioEngine.setPresenceBias(bias);
+    });
+
     return () => {
       off();
+      offPresence();
       window.removeEventListener("pointerdown", unlockOnce);
       window.removeEventListener("keydown", unlockOnce);
     };
