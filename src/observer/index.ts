@@ -13,6 +13,9 @@
 
 export { Observer } from "./core/Observer";
 export { Presence } from "./presence/PresenceState";
+export { PresenceEngine } from "./presence/PresenceEngine";
+export { PresenceLayer } from "./presence/PresenceLayer";
+export { MotionField } from "./effects/MotionField";
 export { CameraAttachment } from "./camera/CameraAttachment";
 export { ObserverHUD } from "./ui/ObserverHUD";
 export { useObserver } from "./hooks/useObserver";

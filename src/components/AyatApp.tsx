@@ -14,7 +14,7 @@ import { AudioBridge, AudioSettingsPanel } from "../audio";
 import { JourneyPicker, JourneyPlayer } from "../journeys";
 import { AssistantPanel } from "../assistant";
 import { ContemplationLauncher, ContemplationOverlay } from "../contemplation";
-import { CameraAttachment, ObserverHUD } from "../observer";
+import { CameraAttachment, ObserverHUD, PresenceLayer, MotionField } from "../observer";
 import { AwakeningOverlay, AwakeningState } from "../observer/awakening";
 import "../discovery";
 import "../exploration";
@@ -65,6 +65,8 @@ export function AyatApp() {
         <Engine>
           <WorldScene />
           <CameraAttachment />
+          <MotionField />
+          <PresenceLayer />
         </Engine>
       )}
       <AudioBridge />
