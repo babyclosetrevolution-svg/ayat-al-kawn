@@ -61,13 +61,15 @@ export function Moon({ data }: { data: CelestialBodyData }) {
     <>
       {data.orbit && (
         <OrbitLine
+          bodyId={data.id}
           radius={distance}
           inclination={data.orbit.inclination}
           color="#cfd8e8"
-          opacity={0.1}
+          opacity={0.12}
           segments={128}
         />
       )}
+
       <group ref={pivotRef} rotation={[inclination, phase, 0]}>
         <mesh
           ref={meshRef}
