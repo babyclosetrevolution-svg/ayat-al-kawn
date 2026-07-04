@@ -93,12 +93,14 @@ export function Planet({ data, moons = [], starPosition }: Props) {
     <group position={anchor}>
       {hasOrbit && (
         <OrbitLine
+          bodyId={data.id}
           radius={orbitDistance}
           inclination={data.orbit?.inclination}
           color="#9bbcff"
           opacity={0.16}
         />
       )}
+
       <group ref={pivotRef} rotation={[orbitInclination, orbitPhase, 0]}>
         <group ref={bodyRef} position={bodyOffset} rotation={[0, 0, tilt]}>
           <mesh

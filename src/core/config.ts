@@ -9,11 +9,17 @@ export const ENGINE_CONFIG = {
     dpr: [1, 2] as [number, number],
   },
   camera: {
-    fov: 55,
+    // Narrower FOV = subtle lens compression, so the Sun and planets
+    // never dominate the frame on landing.
+    fov: 42,
     near: 0.01,
-    far: 100000,
-    position: [0, 80, 160] as [number, number, number],
+    far: 200000,
+    // Pulled far back so the opening composition reads as "a small
+    // presence inside an enormous volume" rather than a solar-system
+    // showcase. The Director will reframe on first user focus.
+    position: [0, 320, 940] as [number, number, number],
   },
+
   controls: {
     enableDamping: true,
     dampingFactor: 0.06,
