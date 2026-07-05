@@ -9,16 +9,18 @@ export const ENGINE_CONFIG = {
     dpr: [1, 2] as [number, number],
   },
   camera: {
-    // Narrower FOV = subtle lens compression, so the Sun and planets
-    // never dominate the frame on landing.
-    fov: 42,
+    // Narrow FOV = lens compression. Combined with an off-axis
+    // position, the Sun never sits centered on landing; it's just a
+    // bright point encountered inside a much larger volume.
+    fov: 40,
     near: 0.01,
     far: 200000,
-    // Pulled far back so the opening composition reads as "a small
-    // presence inside an enormous volume" rather than a solar-system
-    // showcase. The Director will reframe on first user focus.
-    position: [0, 320, 940] as [number, number, number],
+    // Off-center, well pulled back. The Observer is a small presence
+    // adrift in space — the Solar System is somewhere over there, not
+    // the subject of the frame.
+    position: [-1450, 340, 2150] as [number, number, number],
   },
+
 
   controls: {
     enableDamping: true,
