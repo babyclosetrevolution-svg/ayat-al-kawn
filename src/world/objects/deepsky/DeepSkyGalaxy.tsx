@@ -157,17 +157,24 @@ export function DeepSkyGalaxy({ data }: DeepSkyRendererProps) {
       const near = radius * 4;
       const far = radius * 40;
       const t = THREE.MathUtils.clamp((d - near) / (far - near), 0, 1);
-      if (diskMatRef.current) diskMatRef.current.size = THREE.MathUtils.lerp(1.4, 0.6, t);
-      if (bulgeMatRef.current) bulgeMatRef.current.size = THREE.MathUtils.lerp(2.6, 1.2, t);
-      if (haloMatRef.current) haloMatRef.current.size = THREE.MathUtils.lerp(1.1, 0.6, t);
-      // Hide the largest sprite at very-far distance to keep bloom calm.
-      const farFade = 1 - t * 0.5;
+      if (diskMatRef.current) diskMatRef.current.size = THREE.MathUtils.lerp(1.3, 0.55, t);
+      if (bulgeMatRef.current) bulgeMatRef.current.size = THREE.MathUtils.lerp(2.3, 1.0, t);
+      if (haloMatRef.current) haloMatRef.current.size = THREE.MathUtils.lerp(1.0, 0.55, t);
+      // Distant galaxies should read as cosmic structures, not glowing
+      // decorations. Fade their material opacity toward zero far from
+      // the object so the landing frame stays dark and calm.
+      const opFar = 1 - t * 0.85;
+      if (diskMatRef.current) diskMatRef.current.opacity = 0.55 * opFar;
+      if (bulgeMatRef.current) bulgeMatRef.current.opacity = 0.7 * opFar;
+      if (haloMatRef.current) haloMatRef.current.opacity = 0.22 * opFar;
+      const farFade = 1 - t * 0.75;
       coreSpriteRefs.current.forEach((s) => {
         if (s) (s.material as THREE.SpriteMaterial).opacity =
           (s.userData.baseOpacity as number) * farFade;
       });
     }
   });
+
 
   const corePalette = useMemo<[number, number, number][]>(() => {
     const [r0, g0, b0] = hexToRgb(baseColor);
@@ -181,11 +188,11 @@ export function DeepSkyGalaxy({ data }: DeepSkyRendererProps) {
   const haloMaterial = useMemo(
     () =>
       new THREE.PointsMaterial({
-        size: 1.1,
+        size: 1.0,
         sizeAttenuation: true,
         vertexColors: true,
         transparent: true,
-        opacity: 0.35,
+        opacity: 0.22,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
       }),
@@ -194,11 +201,11 @@ export function DeepSkyGalaxy({ data }: DeepSkyRendererProps) {
   const diskMaterial = useMemo(
     () =>
       new THREE.PointsMaterial({
-        size: 1.4,
+        size: 1.3,
         sizeAttenuation: true,
         vertexColors: true,
         transparent: true,
-        opacity: 0.85,
+        opacity: 0.55,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
       }),
@@ -207,11 +214,11 @@ export function DeepSkyGalaxy({ data }: DeepSkyRendererProps) {
   const bulgeMaterial = useMemo(
     () =>
       new THREE.PointsMaterial({
-        size: 2.6,
+        size: 2.3,
         sizeAttenuation: true,
         vertexColors: true,
         transparent: true,
-        opacity: 0.95,
+        opacity: 0.7,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
       }),
@@ -229,12 +236,12 @@ export function DeepSkyGalaxy({ data }: DeepSkyRendererProps) {
 
   const bulgeR = radius * (form === "elliptical" ? 0.85 : 0.28);
   const coreLayers: { scale: number; rgb: [number, number, number]; opacity: number }[] = [
-    // Removed the 8x outer halo — at galactic distances it stacked with the
-    // background haze and lifted the sky. Two tighter tiers keep the core
-    // luminous without bleeding into deep space.
-    { scale: bulgeR * 3.2, rgb: corePalette[1], opacity: 0.12 },
-    { scale: bulgeR * 1.4, rgb: corePalette[2], opacity: 0.32 },
+    // Two tight tiers only — no fullscreen halo. Distant galaxies must
+    // read as structures, not glows.
+    { scale: bulgeR * 2.8, rgb: corePalette[1], opacity: 0.08 },
+    { scale: bulgeR * 1.2, rgb: corePalette[2], opacity: 0.22 },
   ];
+
 
   return (
     <group ref={groupRef} userData={{ focusKey: data.id }}>

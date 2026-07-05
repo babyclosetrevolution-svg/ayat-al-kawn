@@ -99,11 +99,11 @@ export function MilkyWayGalaxy({ data }: { data: GalaxyData }) {
   const diskMaterial = useMemo(
     () =>
       new THREE.PointsMaterial({
-        size: 1.5,
+        size: 1.35,
         sizeAttenuation: true,
         vertexColors: true,
         transparent: true,
-        opacity: 0.92,
+        opacity: 0.7,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
       }),
@@ -113,11 +113,11 @@ export function MilkyWayGalaxy({ data }: { data: GalaxyData }) {
   const bulgeMaterial = useMemo(
     () =>
       new THREE.PointsMaterial({
-        size: 2.4,
+        size: 2.1,
         sizeAttenuation: true,
         vertexColors: true,
         transparent: true,
-        opacity: 1.0,
+        opacity: 0.82,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
       }),
@@ -127,16 +127,17 @@ export function MilkyWayGalaxy({ data }: { data: GalaxyData }) {
   const haloMaterial = useMemo(
     () =>
       new THREE.PointsMaterial({
-        size: 1.1,
+        size: 1.0,
         sizeAttenuation: true,
         vertexColors: true,
         transparent: true,
-        opacity: 0.45,
+        opacity: 0.3,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
       }),
     [],
   );
+
 
   useEffect(() => {
     return () => {

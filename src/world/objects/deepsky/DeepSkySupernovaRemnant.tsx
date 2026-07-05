@@ -91,11 +91,11 @@ export function DeepSkySupernovaRemnant({ data }: DeepSkyRendererProps) {
   const shellMaterial = useMemo(
     () =>
       new THREE.PointsMaterial({
-        size: 1.3,
+        size: 1.2,
         sizeAttenuation: true,
         vertexColors: true,
         transparent: true,
-        opacity: 0.9,
+        opacity: 0.6,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
       }),
@@ -106,7 +106,7 @@ export function DeepSkySupernovaRemnant({ data }: DeepSkyRendererProps) {
       new THREE.LineBasicMaterial({
         vertexColors: true,
         transparent: true,
-        opacity: 0.55,
+        opacity: 0.35,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
       }),
@@ -131,9 +131,14 @@ export function DeepSkySupernovaRemnant({ data }: DeepSkyRendererProps) {
     const near = radius * 3;
     const far = radius * 30;
     const t = THREE.MathUtils.clamp((d - near) / (far - near), 0, 1);
-    if (pointsMatRef.current) pointsMatRef.current.size = THREE.MathUtils.lerp(1.6, 0.8, t);
-    if (lineMatRef.current) lineMatRef.current.opacity = THREE.MathUtils.lerp(0.6, 0.2, t);
+    const opFar = 1 - t * 0.85;
+    if (pointsMatRef.current) {
+      pointsMatRef.current.size = THREE.MathUtils.lerp(1.4, 0.7, t);
+      pointsMatRef.current.opacity = 0.6 * opFar;
+    }
+    if (lineMatRef.current) lineMatRef.current.opacity = 0.35 * opFar;
   });
+
 
   return (
     <group ref={groupRef} userData={{ focusKey: data.id }}>
