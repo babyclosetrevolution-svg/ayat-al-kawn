@@ -82,10 +82,18 @@ class CameraDirectorImpl {
   /** Capture the existing camera/target pose so transitions feel continuous. */
   bootstrap(camera: THREE.PerspectiveCamera, target: THREE.Vector3) {
     this.currentCamera.copy(camera.position);
-    this.currentTarget.copy(target);
+    // Landing pose: gaze past the Sun, not at it. The target is offset
+    // sideways from the origin so the Solar System sits off-frame; the
+    // Observer is looking into open space, not at a hero object.
+    if (target.lengthSq() < 1e-6) {
+      this.currentTarget.set(900, -120, -520);
+    } else {
+      this.currentTarget.copy(target);
+    }
     this.currentFov = camera.fov;
     this.initialized = true;
   }
+
 
   /**
    * Called when focus changes — recomputes the desired pose & preset, keeping
@@ -154,9 +162,22 @@ class CameraDirectorImpl {
         this.desiredCamera.y += breath * this.offsetLen;
       }
     } else {
+      // No focus — the Universe simply exists. Very slow parallax drift
+      // so the frame breathes without ever feeling posed. Nothing is
+      // presented; the eye is free to wander.
       this.desiredTarget.copy(this.currentTarget);
-      this.desiredCamera.copy(this.currentCamera);
+      if (!this.reducedMotion) {
+        const t = this.elapsed;
+        const amp = Math.max(60, this.currentCamera.length() * 0.006);
+        this.desiredCamera.copy(this.currentCamera);
+        this.desiredCamera.x += Math.sin(t * 0.043) * amp;
+        this.desiredCamera.y += Math.sin(t * 0.029 + 1.3) * amp * 0.4;
+        this.desiredCamera.z += Math.cos(t * 0.035 + 0.6) * amp * 0.6;
+      } else {
+        this.desiredCamera.copy(this.currentCamera);
+      }
     }
+
 
     // Smooth easing — target leads, camera follows (anticipation).
     // Rate is modulated by remaining travel: long journeys accelerate
