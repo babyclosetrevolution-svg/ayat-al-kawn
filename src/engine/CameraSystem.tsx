@@ -97,14 +97,26 @@ export function CameraSystem() {
     const controls = controlsRef.current;
     if (!controls) return;
     const { targetPos, cameraPos, fov } = CameraDirector.update(persp, delta);
-    controls.target.copy(targetPos);
-    camera.position.copy(cameraPos);
-    if (Math.abs(persp.fov - fov) > 0.01) {
-      persp.fov = fov;
-      persp.updateProjectionMatrix();
+    // Contemplation mode: no focus → OrbitControls owns the camera.
+    // The Director keeps tracking the pose (via bootstrap on next focus)
+    // but never overrides the user's free look/zoom/pan.
+    const hasFocus = FocusRegistry.getActive() != null;
+    if (hasFocus) {
+      controls.target.copy(targetPos);
+      camera.position.copy(cameraPos);
+      if (Math.abs(persp.fov - fov) > 0.01) {
+        persp.fov = fov;
+        persp.updateProjectionMatrix();
+      }
+    } else {
+      // Keep the Director's internal current pose synced to the live
+      // camera so a future focus transition starts from where the user
+      // actually is, not from a stale snapshot.
+      CameraDirector.bootstrap(persp, controls.target);
     }
     controls.update();
   });
+
 
   return (
     <OrbitControls
