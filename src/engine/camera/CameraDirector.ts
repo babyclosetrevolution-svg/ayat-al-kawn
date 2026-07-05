@@ -162,21 +162,14 @@ class CameraDirectorImpl {
         this.desiredCamera.y += breath * this.offsetLen;
       }
     } else {
-      // No focus — the Universe simply exists. Very slow parallax drift
-      // so the frame breathes without ever feeling posed. Nothing is
-      // presented; the eye is free to wander.
+      // No focus — the Observer is contemplating. The Director yields
+      // authority: it reports the current pose unchanged so the caller
+      // can skip overwriting OrbitControls. The user's drag/zoom keeps
+      // full control; PresenceLayer still adds micro-breathing.
       this.desiredTarget.copy(this.currentTarget);
-      if (!this.reducedMotion) {
-        const t = this.elapsed;
-        const amp = Math.max(60, this.currentCamera.length() * 0.006);
-        this.desiredCamera.copy(this.currentCamera);
-        this.desiredCamera.x += Math.sin(t * 0.043) * amp;
-        this.desiredCamera.y += Math.sin(t * 0.029 + 1.3) * amp * 0.4;
-        this.desiredCamera.z += Math.cos(t * 0.035 + 0.6) * amp * 0.6;
-      } else {
-        this.desiredCamera.copy(this.currentCamera);
-      }
+      this.desiredCamera.copy(this.currentCamera);
     }
+
 
 
     // Smooth easing — target leads, camera follows (anticipation).

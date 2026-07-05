@@ -139,7 +139,7 @@ export function DeepSkyNebula({ data }: DeepSkyRendererProps) {
     const near = radius * 4;
     const far = radius * 30;
     const t = THREE.MathUtils.clamp((dist - near) / (far - near), 0, 1);
-    material.opacity = THREE.MathUtils.lerp(0.14, 0.03, t);
+    material.opacity = THREE.MathUtils.lerp(0.1, 0.02, t);
 
     // Always face camera (billboarding for instanced meshes).
     const camPos = camera.position;
@@ -169,7 +169,7 @@ export function DeepSkyNebula({ data }: DeepSkyRendererProps) {
           map={getSoftGlowTexture() ?? undefined}
           color={new THREE.Color(baseColor)}
           transparent
-          opacity={0.18}
+          opacity={0.12}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
           toneMapped={false}
