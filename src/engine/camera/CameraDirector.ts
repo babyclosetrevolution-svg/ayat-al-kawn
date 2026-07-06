@@ -203,7 +203,23 @@ class CameraDirectorImpl {
     const kTarget = smoothK(travelRate * 1.8, delta);
 
     this.currentTarget.lerp(this.desiredTarget, kTarget);
-    this.currentCamera.lerp(this.desiredCamera, kCam);
+    // In observation mode the Director no longer drives the camera pose;
+    // OrbitControls owns it. We still track the live camera each frame so
+    // any future journey starts from where the user left off.
+    if (this.mode === "journey") {
+      this.currentCamera.lerp(this.desiredCamera, kCam);
+    } else {
+      this.currentCamera.copy(camera.position);
+    }
+
+    // Journey settled → hand ownership over to OrbitControls.
+    if (this.mode === "journey" && rec) {
+      const settleScaleJ = Math.max(0.0001, this.offsetLen);
+      if (remaining < settleScaleJ * 0.04) {
+        this.mode = "observation";
+      }
+    }
+    if (!rec) this.mode = "idle";
 
     // Collision floor — never let the camera punch through the focused body.
     // The minimum safe distance is a fraction of the suggested distance,
