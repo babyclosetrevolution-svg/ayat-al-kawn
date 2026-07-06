@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { hexToRgb, rng, seedFromId, type DeepSkyRendererProps } from "./shared";
+import { getSoftGlowTexture } from "./glowTexture";
 
 /**
  * DeepSkyCluster — thousands of procedural stars.
