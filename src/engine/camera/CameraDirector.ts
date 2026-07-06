@@ -140,6 +140,9 @@ class CameraDirectorImpl {
         .normalize();
     }
     this.offsetLen = rec.distance * this.activePreset.distanceFactor * viewportScale();
+
+    // Any focus change resets us into a fresh cinematic journey.
+    this.mode = "journey";
   }
 
 
