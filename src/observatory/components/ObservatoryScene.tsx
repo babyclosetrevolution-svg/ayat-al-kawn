@@ -9,6 +9,7 @@ import { moonPosition, moonInfo } from "../astro/moon";
 import { planetPositions } from "../astro/planets";
 import { CONSTELLATIONS } from "../data/constellations";
 import { useObservatoryState } from "../useObservatoryState";
+import { getSoftGlowTexture } from "../../world/objects/deepsky/glowTexture";
 
 /**
  * ObservatoryScene — geocentric celestial sphere.
