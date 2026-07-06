@@ -120,19 +120,24 @@ export function DeepSkyCluster({ data }: DeepSkyRendererProps) {
   return (
     <group ref={groupRef} userData={{ focusKey: data.id }}>
       <points geometry={geom} material={material} />
-      {/* Faint halo glow for globulars */}
-      {isGlobular && (
-        <sprite scale={[radius * 2.4, radius * 2.4, 1]}>
-          <spriteMaterial
-            color={new THREE.Color(baseColor)}
-            transparent
-            opacity={0.16}
-            depthWrite={false}
-            blending={THREE.AdditiveBlending}
-            toneMapped={false}
-          />
-        </sprite>
-      )}
+      {/* Faint halo glow for globulars — must use a soft texture, otherwise
+          a bare spriteMaterial renders as a solid opaque quad (gray square). */}
+      {isGlobular && (() => {
+        const glow = getSoftGlowTexture();
+        return glow ? (
+          <sprite scale={[radius * 2.4, radius * 2.4, 1]}>
+            <spriteMaterial
+              map={glow}
+              color={new THREE.Color(baseColor)}
+              transparent
+              opacity={0.16}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+              toneMapped={false}
+            />
+          </sprite>
+        ) : null;
+      })()}
     </group>
   );
 }
