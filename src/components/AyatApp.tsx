@@ -91,7 +91,7 @@ export function AyatApp() {
           <button
             type="button"
             onClick={handleReplayAwakening}
-            className="pointer-events-auto fixed bottom-3 left-3 z-30 rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[0.55rem] uppercase tracking-[0.3em] text-white/50 backdrop-blur-md transition-colors hover:border-white/30 hover:text-white/80"
+            className="pointer-events-auto fixed top-3 right-3 z-30 rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[0.55rem] uppercase tracking-[0.3em] text-white/50 backdrop-blur-md transition-colors hover:border-white/30 hover:text-white/80"
           >
             Replay awakening
           </button>
