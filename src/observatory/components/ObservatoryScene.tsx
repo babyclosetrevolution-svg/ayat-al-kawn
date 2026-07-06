@@ -220,13 +220,17 @@ function ConstellationLayer({
           const star = c.stars[i];
           const size = magnitudeToSize(star.magnitude, 0.6);
           const opacity = magnitudeToOpacity(star.magnitude);
+          const glow = getSoftGlowTexture();
+          if (!glow) return null;
           return (
             <sprite key={`${c.id}-${i}`} position={p.pos} scale={[size, size, 1]}>
               <spriteMaterial
+                map={glow}
                 color="#ffffff"
                 transparent
                 opacity={opacity}
                 depthWrite={false}
+                blending={THREE.AdditiveBlending}
                 toneMapped={false}
               />
             </sprite>
@@ -256,11 +260,14 @@ function Luminary({ body }: { body: PlacedBody }) {
   const isSun = body.isLuminary === "sun";
   const isMoon = body.isLuminary === "moon";
   const baseSize = isSun ? 1.8 : isMoon ? 1.5 : body.size;
+  const glow = getSoftGlowTexture();
+  if (!glow) return null;
   return (
     <group position={body.position}>
       {/* Outer glow */}
       <sprite scale={[baseSize * 4, baseSize * 4, 1]}>
         <spriteMaterial
+          map={glow}
           color={body.color}
           transparent
           opacity={isSun ? 0.45 : isMoon ? 0.25 : 0.4}
@@ -271,10 +278,12 @@ function Luminary({ body }: { body: PlacedBody }) {
       </sprite>
       <sprite scale={[baseSize, baseSize, 1]}>
         <spriteMaterial
+          map={glow}
           color={body.color}
           transparent
           opacity={body.opacity}
           depthWrite={false}
+          blending={THREE.AdditiveBlending}
           toneMapped={false}
         />
       </sprite>
