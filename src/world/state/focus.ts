@@ -9,10 +9,22 @@ import * as THREE from "three";
  */
 export type FocusKey = string | null;
 
-interface TargetRecord {
+export interface TargetRecord {
   position: THREE.Vector3;
   /** Suggested viewing distance from the object's center. */
   distance: number;
+  /** Optional observation envelope. Falls back to distance-derived defaults. */
+  minDistance?: number;
+  preferredDistance?: number;
+  maxDistance?: number;
+}
+
+/** Resolve the observation envelope (min / preferred / max) for a record. */
+export function observationEnvelope(rec: TargetRecord) {
+  const preferred = rec.preferredDistance ?? rec.distance;
+  const min = rec.minDistance ?? rec.distance * 0.55;
+  const max = rec.maxDistance ?? rec.distance * 10;
+  return { min, preferred, max };
 }
 
 class FocusRegistryImpl {
