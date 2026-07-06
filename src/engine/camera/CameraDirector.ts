@@ -70,6 +70,19 @@ class CameraDirectorImpl {
   private initialized = false;
   private reducedMotion = false;
 
+  /**
+   * Camera ownership mode.
+   *  - "idle"        : no focus, OrbitControls fully owns the camera.
+   *  - "journey"     : arrival flight, Director owns the camera.
+   *  - "observation" : arrival settled, OrbitControls owns interaction,
+   *                    Director only keeps target locked to the body.
+   */
+  private mode: "idle" | "journey" | "observation" = "idle";
+
+  getMode() {
+    return this.mode;
+  }
+
   setReducedMotion(v: boolean) {
     this.reducedMotion = v;
   }
