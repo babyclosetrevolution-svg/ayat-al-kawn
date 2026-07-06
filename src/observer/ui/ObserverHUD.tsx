@@ -67,7 +67,7 @@ export function ObserverHUD({ visible = true }: { visible?: boolean }) {
 
   return (
     <div
-      className={`pointer-events-none fixed left-1/2 top-3 z-30 -translate-x-1/2 transition-opacity duration-[900ms] ${
+      className={`pointer-events-none fixed left-3 top-14 z-30 transition-opacity duration-[900ms] ${
         active ? "opacity-80" : "opacity-0"
       }`}
     >
