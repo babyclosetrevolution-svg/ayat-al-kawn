@@ -97,21 +97,39 @@ export function CameraSystem() {
     const controls = controlsRef.current;
     if (!controls) return;
     const { targetPos, cameraPos, fov } = CameraDirector.update(persp, delta);
-    // Contemplation mode: no focus → OrbitControls owns the camera.
-    // The Director keeps tracking the pose (via bootstrap on next focus)
-    // but never overrides the user's free look/zoom/pan.
-    const hasFocus = FocusRegistry.getActive() != null;
-    if (hasFocus) {
+    const mode = CameraDirector.getMode();
+    const activeKey = FocusRegistry.getActive();
+    const activeRec = activeKey ? FocusRegistry.get(activeKey) : undefined;
+
+    if (mode === "journey") {
+      // Cinematic arrival — Director drives target + position + FOV.
       controls.target.copy(targetPos);
       camera.position.copy(cameraPos);
       if (Math.abs(persp.fov - fov) > 0.01) {
         persp.fov = fov;
         persp.updateProjectionMatrix();
       }
+    } else if (mode === "observation" && activeRec) {
+      // Body-locked orbital camera. OrbitControls owns rotation/zoom;
+      // we only keep the pivot glued to the (possibly orbiting) body.
+      controls.target.lerp(activeRec.position, 0.35);
+      // Adaptive envelope from the body's suggested distances.
+      const env = observationEnvelope(activeRec);
+      if (controls.minDistance !== env.min) controls.minDistance = env.min;
+      if (controls.maxDistance !== env.max) controls.maxDistance = env.max;
+      // Ease FOV back to the preset's resting value.
+      if (Math.abs(persp.fov - fov) > 0.01) {
+        persp.fov = fov;
+        persp.updateProjectionMatrix();
+      }
     } else {
-      // Keep the Director's internal current pose synced to the live
-      // camera so a future focus transition starts from where the user
-      // actually is, not from a stale snapshot.
+      // Idle / contemplation — OrbitControls owns everything.
+      if (controls.minDistance !== ENGINE_CONFIG.controls.minDistance) {
+        controls.minDistance = ENGINE_CONFIG.controls.minDistance;
+      }
+      if (controls.maxDistance !== ENGINE_CONFIG.controls.maxDistance) {
+        controls.maxDistance = ENGINE_CONFIG.controls.maxDistance;
+      }
       CameraDirector.bootstrap(persp, controls.target);
     }
     controls.update();
