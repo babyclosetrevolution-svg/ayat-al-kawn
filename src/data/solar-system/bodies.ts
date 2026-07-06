@@ -446,6 +446,40 @@ const TRITON: CelestialBodyData = {
   },
 };
 
+/**
+ * Cosmic-scale pass (Phase 22.2). Radii are compressed and orbital
+ * distances are stretched so the Solar System reads as a tiny, isolated
+ * pocket of space rather than a museum mobile. Physical `science` facts
+ * are untouched — only the *visual* proxy dimensions used by the renderer.
+ */
+const RADIUS_SCALE = 0.6;
+const DISTANCE_SCALE = 1.9;
+
+function rescale(body: CelestialBodyData): CelestialBodyData {
+  const scaled: CelestialBodyData = {
+    ...body,
+    radius: body.radius * RADIUS_SCALE,
+  };
+  if (body.orbit) {
+    scaled.orbit = { ...body.orbit, distance: body.orbit.distance * DISTANCE_SCALE };
+  }
+  if (body.rings) {
+    scaled.rings = {
+      ...body.rings,
+      innerRadius: body.rings.innerRadius * RADIUS_SCALE,
+      outerRadius: body.rings.outerRadius * RADIUS_SCALE,
+    };
+  }
+  if (body.position) {
+    scaled.position = [
+      body.position[0] * DISTANCE_SCALE,
+      body.position[1] * DISTANCE_SCALE,
+      body.position[2] * DISTANCE_SCALE,
+    ];
+  }
+  return scaled;
+}
+
 export const SOLAR_SYSTEM_BODIES: CelestialBodyData[] = [
   SUN,
   MERCURY,
@@ -468,4 +502,4 @@ export const SOLAR_SYSTEM_BODIES: CelestialBodyData[] = [
   OBERON,
   NEPTUNE,
   TRITON,
-];
+].map(rescale);
