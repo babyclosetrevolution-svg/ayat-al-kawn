@@ -4,7 +4,7 @@ import { OrbitControls } from "@react-three/drei";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import { ENGINE_CONFIG } from "../core/config";
-import { FocusRegistry, type FocusKey } from "../world/state/focus";
+import { FocusRegistry, observationEnvelope, type FocusKey } from "../world/state/focus";
 import { CameraDirector } from "./camera/CameraDirector";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 import { UIState } from "../ui/state/uiState";
