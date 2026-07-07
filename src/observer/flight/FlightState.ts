@@ -43,8 +43,7 @@ export const FlightState = {
     for (const k of Object.keys(patch) as (keyof FlightSnapshot)[]) {
       const v = patch[k];
       if (v !== undefined && state[k] !== v) {
-        // Number coercion keeps TS happy across the union type.
-        (state as Record<string, unknown>)[k] = v;
+        (state as unknown as Record<string, unknown>)[k] = v;
         changed = true;
       }
     }
