@@ -209,6 +209,23 @@ export function CameraSystem() {
       }
 
       CameraDirector.bootstrap(persp, controls.target);
+      FlightState.set({
+        tier,
+        speed: velRef.current.length(),
+        focused: false,
+        translating: hasTranslation,
+      });
+    }
+
+    if (mode === "journey" || mode === "observation") {
+      // Keep the HUD aware of what's happening even outside flight.
+      const pivotDist = camera.position.distanceTo(controls.target);
+      FlightState.set({
+        tier: pickTier(pivotDist),
+        speed: 0,
+        focused: true,
+        translating: false,
+      });
     }
     controls.update();
   });
