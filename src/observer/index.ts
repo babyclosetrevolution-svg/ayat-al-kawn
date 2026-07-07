@@ -18,6 +18,8 @@ export { PresenceLayer } from "./presence/PresenceLayer";
 export { MotionField } from "./effects/MotionField";
 export { CameraAttachment } from "./camera/CameraAttachment";
 export { ObserverHUD } from "./ui/ObserverHUD";
+export { FlightHUD } from "./ui/FlightHUD";
+export { FlightOnboarding } from "./ui/FlightOnboarding";
 export { useObserver } from "./hooks/useObserver";
 export { useObserverMode } from "./hooks/useObserverMode";
 export { CorridorRegistry } from "./navigation/Corridors";

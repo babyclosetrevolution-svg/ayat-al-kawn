@@ -14,7 +14,7 @@ import { AudioBridge, AudioSettingsPanel } from "../audio";
 import { JourneyPicker, JourneyPlayer } from "../journeys";
 import { AssistantPanel } from "../assistant";
 import { ContemplationLauncher, ContemplationOverlay } from "../contemplation";
-import { CameraAttachment, ObserverHUD, PresenceLayer, MotionField } from "../observer";
+import { CameraAttachment, ObserverHUD, PresenceLayer, MotionField, FlightHUD, FlightOnboarding } from "../observer";
 import { TouchControls, useIsTouchDevice } from "../observer/input/TouchControls";
 import { AwakeningOverlay, AwakeningState } from "../observer/awakening";
 import "../discovery";
@@ -73,6 +73,8 @@ export function AyatApp() {
       )}
       <AudioBridge />
       <ObserverHUD visible={exploring} />
+      <FlightHUD visible={exploring} />
+      <FlightOnboarding visible={exploring} />
       <TitleBar visible={exploring} />
       <ExplorerPanel visible={exploring} />
       <KnowledgePanel visible={exploring} />
