@@ -73,6 +73,8 @@ export function AyatApp() {
       )}
       <AudioBridge />
       <ObserverHUD visible={exploring} />
+      <FlightHUD visible={exploring} />
+      <FlightOnboarding visible={exploring} />
       <TitleBar visible={exploring} />
       <ExplorerPanel visible={exploring} />
       <KnowledgePanel visible={exploring} />
