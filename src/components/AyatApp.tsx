@@ -32,6 +32,7 @@ export function AyatApp() {
   const [progress, setProgress] = useState(0);
   const [awakening, setAwakening] = useState(false);
   const [exploring, setExploring] = useState(false);
+  const isTouch = useIsTouchDevice();
 
   useEffect(() => {
     let raf = 0;
