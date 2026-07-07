@@ -8,6 +8,10 @@ import { FocusRegistry, observationEnvelope, type FocusKey } from "../world/stat
 import { CameraDirector } from "./camera/CameraDirector";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 import { UIState } from "../ui/state/uiState";
+import { InputManager } from "../observer/input/InputManager";
+import { attachKeyboardSource } from "../observer/input/sources/KeyboardSource";
+import { PROFILES, pickTier } from "../observer/flight/VelocityProfiles";
+import { MotionSettingsStore } from "../observer/flight/MotionSettings";
 
 /**
  * CameraSystem — thin runtime around OrbitControls + CameraDirector.
@@ -93,6 +97,20 @@ export function CameraSystem() {
     return () => gl.domElement.removeEventListener("dblclick", onDbl);
   }, [camera, gl, scene]);
 
+  // Attach the shared keyboard source so WASD / arrows / Space / Shift / X
+  // feed InputManager. The FlightSystem below reads the resulting axes.
+  useEffect(() => {
+    const src = attachKeyboardSource();
+    return () => src.dispose();
+  }, []);
+
+  // Scratch vectors reused across frames (allocation-free hot path).
+  const fwd = useRef(new THREE.Vector3()).current;
+  const right = useRef(new THREE.Vector3()).current;
+  const up = useRef(new THREE.Vector3(0, 1, 0)).current;
+  const move = useRef(new THREE.Vector3()).current;
+  const velRef = useRef(new THREE.Vector3());
+
   useFrame((_, delta) => {
     const controls = controlsRef.current;
     if (!controls) return;
@@ -100,6 +118,16 @@ export function CameraSystem() {
     const mode = CameraDirector.getMode();
     const activeKey = FocusRegistry.getActive();
     const activeRec = activeKey ? FocusRegistry.get(activeKey) : undefined;
+    const input = InputManager.state;
+    const hasTranslation =
+      input.forward !== 0 || input.strafe !== 0 || input.vertical !== 0;
+
+    // Flight escape hatch — any translation input during observation lets
+    // the Observer drift free of the focused body. The Director will
+    // return to idle on the next frame once focus is cleared.
+    if (mode === "observation" && hasTranslation) {
+      FocusRegistry.setActive(null);
+    }
 
     if (mode === "journey") {
       // Cinematic arrival — Director drives target + position + FOV.
@@ -109,6 +137,7 @@ export function CameraSystem() {
         persp.fov = fov;
         persp.updateProjectionMatrix();
       }
+      velRef.current.set(0, 0, 0);
     } else if (mode === "observation" && activeRec) {
       // Body-locked orbital camera. OrbitControls owns rotation/zoom;
       // we only keep the pivot glued to the (possibly orbiting) body.
@@ -122,14 +151,62 @@ export function CameraSystem() {
         persp.fov = fov;
         persp.updateProjectionMatrix();
       }
+      velRef.current.set(0, 0, 0);
     } else {
-      // Idle / contemplation — OrbitControls owns everything.
+      // Idle / contemplation — OrbitControls owns rotation & zoom; the
+      // Observer flight layer adds translation (WASD / joystick) on top.
       if (controls.minDistance !== ENGINE_CONFIG.controls.minDistance) {
         controls.minDistance = ENGINE_CONFIG.controls.minDistance;
       }
       if (controls.maxDistance !== ENGINE_CONFIG.controls.maxDistance) {
         controls.maxDistance = ENGINE_CONFIG.controls.maxDistance;
       }
+
+      // --- Flight translation --------------------------------------------
+      // Adaptive speed keyed by camera-to-pivot distance, so the Observer
+      // glides at planetary scales near a body and at interstellar scales
+      // in deep space. Reuses the existing velocity profile table.
+      const settings = MotionSettingsStore.get();
+      const pivotDist = camera.position.distanceTo(controls.target);
+      const tier = pickTier(pivotDist);
+      const profile = PROFILES[tier];
+      const boost = input.boost ? 1 : 0;
+      const brake = input.brake ? 1 : 0;
+      const baseSpeed =
+        (profile.base + (profile.boost - profile.base) * boost) *
+        settings.sensitivity *
+        (1 - brake * 0.85);
+
+      // Desired velocity in world space (camera-relative axes).
+      persp.getWorldDirection(fwd);
+      right.copy(fwd).cross(up).normalize();
+      move.set(0, 0, 0);
+      if (input.forward !== 0)
+        move.addScaledVector(fwd, input.forward * baseSpeed);
+      if (input.strafe !== 0)
+        move.addScaledVector(right, input.strafe * baseSpeed);
+      if (input.vertical !== 0)
+        move.addScaledVector(up, input.vertical * baseSpeed);
+
+      // Smoothly accelerate toward desired velocity (glide, not snap).
+      const accelK = 1 - Math.exp(-profile.accelRate * delta);
+      velRef.current.lerp(move, accelK);
+      if (!hasTranslation) {
+        const damp = Math.pow(profile.damping, delta * 60);
+        velRef.current.multiplyScalar(damp);
+        if (brake > 0) velRef.current.multiplyScalar(1 - 0.6 * delta * 6);
+      }
+      if (velRef.current.lengthSq() < 1e-6) velRef.current.set(0, 0, 0);
+
+      // Translate both camera and pivot so OrbitControls keeps its bearing.
+      if (velRef.current.lengthSq() > 0) {
+        const step = move.copy(velRef.current).multiplyScalar(delta);
+        camera.position.add(step);
+        controls.target.add(step);
+        CameraDirector.markInteraction();
+        if (hasTranslation) UIState.setActivity("navigating");
+      }
+
       CameraDirector.bootstrap(persp, controls.target);
     }
     controls.update();

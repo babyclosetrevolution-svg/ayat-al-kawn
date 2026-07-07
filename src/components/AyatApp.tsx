@@ -15,6 +15,7 @@ import { JourneyPicker, JourneyPlayer } from "../journeys";
 import { AssistantPanel } from "../assistant";
 import { ContemplationLauncher, ContemplationOverlay } from "../contemplation";
 import { CameraAttachment, ObserverHUD, PresenceLayer, MotionField } from "../observer";
+import { TouchControls, useIsTouchDevice } from "../observer/input/TouchControls";
 import { AwakeningOverlay, AwakeningState } from "../observer/awakening";
 import "../discovery";
 import "../exploration";
@@ -31,6 +32,7 @@ export function AyatApp() {
   const [progress, setProgress] = useState(0);
   const [awakening, setAwakening] = useState(false);
   const [exploring, setExploring] = useState(false);
+  const isTouch = useIsTouchDevice();
 
   useEffect(() => {
     let raf = 0;
@@ -95,6 +97,7 @@ export function AyatApp() {
           >
             Replay awakening
           </button>
+          {isTouch && <TouchControls />}
         </>
       )}
       {awakening && (
