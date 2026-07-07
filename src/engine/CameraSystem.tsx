@@ -8,6 +8,10 @@ import { FocusRegistry, observationEnvelope, type FocusKey } from "../world/stat
 import { CameraDirector } from "./camera/CameraDirector";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 import { UIState } from "../ui/state/uiState";
+import { InputManager } from "../observer/input/InputManager";
+import { attachKeyboardSource } from "../observer/input/sources/KeyboardSource";
+import { PROFILES, pickTier } from "../observer/flight/VelocityProfiles";
+import { MotionSettingsStore } from "../observer/flight/MotionSettings";
 
 /**
  * CameraSystem — thin runtime around OrbitControls + CameraDirector.
