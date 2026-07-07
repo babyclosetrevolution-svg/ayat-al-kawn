@@ -15,6 +15,7 @@ import { JourneyPicker, JourneyPlayer } from "../journeys";
 import { AssistantPanel } from "../assistant";
 import { ContemplationLauncher, ContemplationOverlay } from "../contemplation";
 import { CameraAttachment, ObserverHUD, PresenceLayer, MotionField } from "../observer";
+import { TouchControls, useIsTouchDevice } from "../observer/input/TouchControls";
 import { AwakeningOverlay, AwakeningState } from "../observer/awakening";
 import "../discovery";
 import "../exploration";
