@@ -97,6 +97,7 @@ export function AyatApp() {
           >
             Replay awakening
           </button>
+          {isTouch && <TouchControls />}
         </>
       )}
       {awakening && (
