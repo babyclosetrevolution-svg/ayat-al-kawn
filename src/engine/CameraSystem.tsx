@@ -12,6 +12,7 @@ import { InputManager } from "../observer/input/InputManager";
 import { attachKeyboardSource } from "../observer/input/sources/KeyboardSource";
 import { PROFILES, pickTier } from "../observer/flight/VelocityProfiles";
 import { MotionSettingsStore } from "../observer/flight/MotionSettings";
+import { FlightState } from "../observer/flight/FlightState";
 
 /**
  * CameraSystem — thin runtime around OrbitControls + CameraDirector.
