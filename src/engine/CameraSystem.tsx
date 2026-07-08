@@ -10,7 +10,7 @@ import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 import { UIState } from "../ui/state/uiState";
 import { InputManager } from "../observer/input/InputManager";
 import { attachKeyboardSource } from "../observer/input/sources/KeyboardSource";
-import { PROFILES, pickTier, profileAtDistance } from "../observer/flight/VelocityProfiles";
+import { pickTier, profileAtDistance } from "../observer/flight/VelocityProfiles";
 import { smoothK } from "../lib/motion";
 import { MotionSettingsStore } from "../observer/flight/MotionSettings";
 import { FlightState } from "../observer/flight/FlightState";
