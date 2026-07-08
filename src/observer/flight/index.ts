@@ -21,7 +21,7 @@ export { BrakeController } from "./BrakeController";
 export { ComfortController } from "./ComfortController";
 export { bindInputs, FlightKeys, type InputBindingHandle } from "./InputMapping";
 export { MotionSettingsStore, DEFAULT_MOTION_SETTINGS } from "./MotionSettings";
-export { PROFILES, blendProfiles, pickTier } from "./VelocityProfiles";
+export { PROFILES, blendProfiles, pickTier, profileAtDistance } from "./VelocityProfiles";
 export type {
   InputState,
   MotionSettings,
