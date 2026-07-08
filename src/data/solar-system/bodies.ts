@@ -240,21 +240,25 @@ const NEPTUNE: CelestialBodyData = {
 };
 
 // ── The Sun ──────────────────────────────────────────────────────────────
+// Cosmic hierarchy (Phase 23): the Sun is one G-type star among billions.
+// Its halos and directional light were dominating the frame at opening;
+// tightened to a bright but modest ember so the scene reads as "a small
+// system inside a much larger universe" rather than a hero portrait.
 const SUN: CelestialBodyData = {
   id: "sun",
   name: "Sun",
   type: "star",
-  radius: 11,
+  radius: 8,
   rotationPeriod: 400,
   position: [0, 0, 0],
   emissive: {
     color: "#ffd089",
-    intensity: 1,
+    intensity: 0.85,
     lightColor: "#fff1d0",
-    lightIntensity: 4.5,
+    lightIntensity: 2.2,
     halos: [
-      { color: "#ffc869", opacity: 0.18, scale: 1.08 },
-      { color: "#ff9a3c", opacity: 0.07, scale: 1.4 },
+      { color: "#ffc869", opacity: 0.1, scale: 1.06 },
+      { color: "#ff9a3c", opacity: 0.035, scale: 1.28 },
     ],
   },
   focusDistanceFactor: 3,
@@ -447,13 +451,16 @@ const TRITON: CelestialBodyData = {
 };
 
 /**
- * Cosmic-scale pass (Phase 22.2). Radii are compressed and orbital
- * distances are stretched so the Solar System reads as a tiny, isolated
- * pocket of space rather than a museum mobile. Physical `science` facts
- * are untouched — only the *visual* proxy dimensions used by the renderer.
+ * Cosmic-scale pass (Phase 23 — Real Universe Hierarchy).
+ *
+ * Bodies are further compressed and orbits further stretched so the whole
+ * Solar System reads as a tiny, isolated pocket of space — a fingerprint
+ * against the deep-sky background rather than a museum diorama. Physical
+ * `science` facts stay untouched — only the visual proxy dimensions used
+ * by the renderer.
  */
-const RADIUS_SCALE = 0.6;
-const DISTANCE_SCALE = 1.9;
+const RADIUS_SCALE = 0.42;
+const DISTANCE_SCALE = 2.4;
 
 function rescale(body: CelestialBodyData): CelestialBodyData {
   const scaled: CelestialBodyData = {
