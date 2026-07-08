@@ -1,5 +1,5 @@
 import type { DeepSkyBodyData, DeepSkyKind, DeepSkyCoordinates } from "./types";
-import { stellarPositionToScene } from "../../sim/coords/stellar";
+import { deepSkyPositionToScene, deepSkyDistance } from "../../sim/coords/stellar";
 
 /**
  * Deep Sky seed catalog.
@@ -252,13 +252,22 @@ const SEEDS: Seed[] = [
 
 function seedToBody(s: Seed): DeepSkyBodyData {
   const lightYears = +(s.coords.parsecs * 3.2615637769).toFixed(1);
+  // Phase 23: radii scale with scene distance so distant galaxies stay
+  // small on screen even after being pushed far out. Nearby nebulae keep
+  // most of their visual footprint; extragalactic objects shrink hard so
+  // they read as distant structures, never decorative props.
+  const sceneD = deepSkyDistance(s.coords.parsecs);
+  const isExtragalactic = s.coords.parsecs > 10_000;
+  const radiusScale = isExtragalactic
+    ? Math.min(1, 26_000 / sceneD) * 0.55
+    : 0.75;
   return {
     id: s.id,
     name: s.name,
     type: s.kind,
-    radius: s.radius,
+    radius: Math.max(4, s.radius * radiusScale),
     rotationPeriod: 0,
-    position: stellarPositionToScene(s.coords),
+    position: deepSkyPositionToScene(s.coords),
     material: { kind: "rock", color: s.color ?? "#bcd0ff" },
     focusDistanceFactor: 4,
     description: s.description,
