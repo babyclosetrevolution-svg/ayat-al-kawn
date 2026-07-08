@@ -10,7 +10,8 @@ import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 import { UIState } from "../ui/state/uiState";
 import { InputManager } from "../observer/input/InputManager";
 import { attachKeyboardSource } from "../observer/input/sources/KeyboardSource";
-import { PROFILES, pickTier } from "../observer/flight/VelocityProfiles";
+import { PROFILES, pickTier, profileAtDistance } from "../observer/flight/VelocityProfiles";
+import { smoothK } from "../lib/motion";
 import { MotionSettingsStore } from "../observer/flight/MotionSettings";
 import { FlightState } from "../observer/flight/FlightState";
 
@@ -142,14 +143,18 @@ export function CameraSystem() {
     } else if (mode === "observation" && activeRec) {
       // Body-locked orbital camera. OrbitControls owns rotation/zoom;
       // we only keep the pivot glued to the (possibly orbiting) body.
-      controls.target.lerp(activeRec.position, 0.35);
+      // Frame-rate independent follow — prevents micro-jitter at low FPS
+      // and keeps the pivot stable across variable delta times.
+      const kFollow = smoothK(6, delta);
+      controls.target.lerp(activeRec.position, kFollow);
       // Adaptive envelope from the body's suggested distances.
       const env = observationEnvelope(activeRec);
       if (controls.minDistance !== env.min) controls.minDistance = env.min;
       if (controls.maxDistance !== env.max) controls.maxDistance = env.max;
-      // Ease FOV back to the preset's resting value.
-      if (Math.abs(persp.fov - fov) > 0.01) {
-        persp.fov = fov;
+      // Ease FOV back to the preset's resting value — interpolated, not snapped.
+      const dFov = fov - persp.fov;
+      if (Math.abs(dFov) > 0.005) {
+        persp.fov += dFov * smoothK(3.5, delta);
         persp.updateProjectionMatrix();
       }
       velRef.current.set(0, 0, 0);
@@ -164,13 +169,13 @@ export function CameraSystem() {
       }
 
       // --- Flight translation --------------------------------------------
-      // Adaptive speed keyed by camera-to-pivot distance, so the Observer
-      // glides at planetary scales near a body and at interstellar scales
-      // in deep space. Reuses the existing velocity profile table.
+      // Continuously blended velocity profile — no discrete jumps between
+      // scale tiers. The Observer accelerates naturally as the pivot
+      // distance changes across planetary → interstellar scales.
       const settings = MotionSettingsStore.get();
       const pivotDist = camera.position.distanceTo(controls.target);
       const tier = pickTier(pivotDist);
-      const profile = PROFILES[tier];
+      const profile = profileAtDistance(pivotDist);
       const boost = input.boost ? 1 : 0;
       const brake = input.brake ? 1 : 0;
       const baseSpeed =
@@ -189,13 +194,17 @@ export function CameraSystem() {
       if (input.vertical !== 0)
         move.addScaledVector(up, input.vertical * baseSpeed);
 
-      // Smoothly accelerate toward desired velocity (glide, not snap).
-      const accelK = 1 - Math.exp(-profile.accelRate * delta);
+      // Frame-rate independent glide toward desired velocity.
+      const accelK = smoothK(profile.accelRate, delta);
       velRef.current.lerp(move, accelK);
       if (!hasTranslation) {
+        // Exponential damping — long, gentle coast. Never abrupt.
         const damp = Math.pow(profile.damping, delta * 60);
         velRef.current.multiplyScalar(damp);
-        if (brake > 0) velRef.current.multiplyScalar(1 - 0.6 * delta * 6);
+        if (brake > 0) {
+          // Progressive brake — approaches zero smoothly, no snap.
+          velRef.current.multiplyScalar(1 - smoothK(2.4, delta));
+        }
       }
       if (velRef.current.lengthSq() < 1e-6) velRef.current.set(0, 0, 0);
 
