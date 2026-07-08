@@ -28,7 +28,7 @@ export const ENGINE_CONFIG = {
     rotateSpeed: 0.5,
     zoomSpeed: 0.7,
     minDistance: 0.3,
-    maxDistance: 20000,
+    maxDistance: 60000,
   },
   starfield: {
     count: 8000,
