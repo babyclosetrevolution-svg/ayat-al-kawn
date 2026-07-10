@@ -17,6 +17,7 @@ import { ContemplationLauncher, ContemplationOverlay } from "../contemplation";
 import { CameraAttachment, ObserverHUD, PresenceLayer, MotionField, FlightHUD, FlightOnboarding } from "../observer";
 import { TouchControls, useIsTouchDevice } from "../observer/input/TouchControls";
 import { AwakeningOverlay, AwakeningState } from "../observer/awakening";
+import { StageState, useStage } from "../world/state/stage";
 import "../discovery";
 import "../exploration";
 import "../encyclopedia/seed";
@@ -33,6 +34,7 @@ export function AyatApp() {
   const [awakening, setAwakening] = useState(false);
   const [exploring, setExploring] = useState(false);
   const isTouch = useIsTouchDevice();
+  const stage = useStage();
 
   useEffect(() => {
     let raf = 0;
@@ -48,16 +50,19 @@ export function AyatApp() {
   }, []);
 
   const handleBegin = () => {
+    StageState.set("surface");
     if (AwakeningState.hasSeen()) setExploring(true);
     else setAwakening(true);
   };
   const handleAwakeningDone = () => {
     setAwakening(false);
+    StageState.set("surface");
     setExploring(true);
   };
   const handleReplayAwakening = () => {
     AwakeningState.replay();
     setExploring(false);
+    StageState.set("surface");
     setAwakening(true);
   };
 
