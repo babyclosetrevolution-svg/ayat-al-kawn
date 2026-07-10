@@ -14,6 +14,7 @@ import { pickTier, profileAtDistance } from "../observer/flight/VelocityProfiles
 import { smoothK } from "../lib/motion";
 import { MotionSettingsStore } from "../observer/flight/MotionSettings";
 import { FlightState } from "../observer/flight/FlightState";
+import { useStage } from "../world/state/stage";
 
 /**
  * CameraSystem — thin runtime around OrbitControls + CameraDirector.
@@ -28,6 +29,7 @@ export function CameraSystem() {
   const { camera, gl, scene } = useThree();
   const persp = camera as THREE.PerspectiveCamera;
   const reduced = usePrefersReducedMotion();
+  const stage = useStage();
 
   useEffect(() => CameraDirector.setReducedMotion(reduced), [reduced]);
 
@@ -116,6 +118,10 @@ export function CameraSystem() {
   useFrame((_, delta) => {
     const controls = controlsRef.current;
     if (!controls) return;
+    // Surface stage owns the camera directly (SurfaceScene). Skip all
+    // OrbitControls / Director / flight work — the horizon look
+    // controller is authoritative until the Observer leaves Earth.
+    if (stage === "surface") return;
     const { targetPos, cameraPos, fov } = CameraDirector.update(persp, delta);
     const mode = CameraDirector.getMode();
     const activeKey = FocusRegistry.getActive();
@@ -244,6 +250,7 @@ export function CameraSystem() {
     <OrbitControls
       ref={controlsRef}
       makeDefault
+      enabled={stage === "cosmos"}
       enableDamping={ENGINE_CONFIG.controls.enableDamping}
       dampingFactor={ENGINE_CONFIG.controls.dampingFactor}
       rotateSpeed={ENGINE_CONFIG.controls.rotateSpeed}
