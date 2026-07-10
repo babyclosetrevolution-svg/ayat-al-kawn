@@ -17,6 +17,7 @@ import { ContemplationLauncher, ContemplationOverlay } from "../contemplation";
 import { CameraAttachment, ObserverHUD, PresenceLayer, MotionField, FlightHUD, FlightOnboarding } from "../observer";
 import { TouchControls, useIsTouchDevice } from "../observer/input/TouchControls";
 import { AwakeningOverlay, AwakeningState } from "../observer/awakening";
+import { StageState, useStage } from "../world/state/stage";
 import "../discovery";
 import "../exploration";
 import "../encyclopedia/seed";
@@ -33,6 +34,7 @@ export function AyatApp() {
   const [awakening, setAwakening] = useState(false);
   const [exploring, setExploring] = useState(false);
   const isTouch = useIsTouchDevice();
+  const stage = useStage();
 
   useEffect(() => {
     let raf = 0;
@@ -48,16 +50,19 @@ export function AyatApp() {
   }, []);
 
   const handleBegin = () => {
+    StageState.set("surface");
     if (AwakeningState.hasSeen()) setExploring(true);
     else setAwakening(true);
   };
   const handleAwakeningDone = () => {
     setAwakening(false);
+    StageState.set("surface");
     setExploring(true);
   };
   const handleReplayAwakening = () => {
     AwakeningState.replay();
     setExploring(false);
+    StageState.set("surface");
     setAwakening(true);
   };
 
@@ -99,7 +104,35 @@ export function AyatApp() {
           >
             Replay awakening
           </button>
-          {isTouch && <TouchControls />}
+          {stage === "surface" && (
+            <>
+              <div className="pointer-events-none fixed inset-x-0 bottom-24 z-20 flex flex-col items-center gap-1 text-center">
+                <p className="text-[0.6rem] uppercase tracking-[0.4em] text-white/70">
+                  L'observateur est petit
+                </p>
+                <p className="text-[0.55rem] uppercase tracking-[0.35em] text-white/40">
+                  L'univers est immense
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => StageState.set("cosmos")}
+                className="pointer-events-auto fixed bottom-6 left-1/2 z-30 -translate-x-1/2 rounded-full border border-white/15 bg-black/50 px-5 py-2 text-[0.6rem] uppercase tracking-[0.35em] text-white/70 backdrop-blur-md transition-colors hover:border-white/40 hover:text-white"
+              >
+                Quitter la Terre
+              </button>
+            </>
+          )}
+          {stage === "cosmos" && (
+            <button
+              type="button"
+              onClick={() => StageState.set("surface")}
+              className="pointer-events-auto fixed bottom-6 left-6 z-30 rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[0.55rem] uppercase tracking-[0.3em] text-white/50 backdrop-blur-md transition-colors hover:border-white/30 hover:text-white/80"
+            >
+              Retour sur Terre
+            </button>
+          )}
+          {isTouch && stage === "cosmos" && <TouchControls />}
         </>
       )}
       {awakening && (
