@@ -140,8 +140,8 @@ export function SurfaceScene() {
 function AtmosphereRim({ radius }: { radius: number }) {
   const uniforms = useMemo(
     () => ({
-      uColor: { value: new THREE.Color("#3a7bd6") },
-      uIntensity: { value: 0.9 },
+      uColor: { value: new THREE.Color("#1f4a86") },
+      uIntensity: { value: 0.35 },
     }),
     [],
   );
