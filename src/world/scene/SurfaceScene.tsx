@@ -27,7 +27,9 @@ const OBSERVER_HEIGHT = 1.7; // metres — the reference feel of "standing".
 export function SurfaceScene() {
   const { camera, gl } = useThree();
   const yawRef = useRef(0);
-  const pitchRef = useRef(0.05); // slightly above the horizon
+  // Opening pitch tilts upward: the Observer looks toward the sky,
+  // not the ground. The horizon curves at the bottom of the frame.
+  const pitchRef = useRef(0.55);
   const draggingRef = useRef(false);
   const lastRef = useRef({ x: 0, y: 0 });
 

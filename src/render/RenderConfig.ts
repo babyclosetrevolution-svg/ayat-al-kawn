@@ -86,10 +86,14 @@ export const RENDER_CONFIG: RenderConfig = {
     resolutionScale: 0.5,
   },
   star: {
-    coronaScale: 2.0,
+    // The Sun is a bright point among many, not a spotlight. Corona
+    // and glare are kept close to the disc so it never dominates the
+    // frame — especially at cosmic distances where it should read as
+    // one star among the near-star catalog.
+    coronaScale: 1.35,
     coronaColor: "#ffd089",
-    glareScale: 4.2,
-    glareOpacity: 0.16,
+    glareScale: 2.4,
+    glareOpacity: 0.08,
   },
   atmosphere: {
     segments: 96,
