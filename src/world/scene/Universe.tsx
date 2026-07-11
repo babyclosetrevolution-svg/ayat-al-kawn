@@ -11,7 +11,27 @@ import { SolarSystem } from "./SolarSystem";
 import { StellarNeighborhood } from "./StellarNeighborhood";
 import { MilkyWayScene } from "./MilkyWayScene";
 import { DeepSkyScene } from "./DeepSkyScene";
+import { CosmicLayer } from "./CosmicLayer";
 import type { DeepSkyBodyData } from "../../data/deep-sky";
+
+/**
+ * Cosmic layer distance rules (pivot distance from origin, scene units).
+ * Layers overlap softly so no hard cut is ever visible; each layer only
+ * asserts itself when the Observer is at a distance where it is the
+ * meaningful subject. Ranges are conservative — the eye should always
+ * see mostly empty space at the opening.
+ */
+const LAYER_RANGES = {
+  // Solar System is the "home" layer — visible only when the Observer
+  // is close enough to read it as a system, not as decoration.
+  solar: { near: 0, far: 1800 },
+  // Nearby stars belong to the interstellar volume.
+  stars: { near: 400, far: 22000 },
+  // Intra-galactic deep sky (nebulae, clusters) — mid-range.
+  deepSky: { near: 1500, far: 45000 },
+  // Extra-galactic deep sky + Milky Way disc — only when truly far out.
+  milkyWay: { near: 6000, far: 60000 },
+} as const;
 
 /**
  * Universe — root of the astronomical scene graph.
@@ -101,12 +121,26 @@ export function Universe() {
 
   return (
     <Galaxy>
-      <MilkyWayScene />
+      <CosmicLayer near={LAYER_RANGES.milkyWay.near} far={LAYER_RANGES.milkyWay.far}>
+        <MilkyWayScene />
+      </CosmicLayer>
       <Sector>
         <Region>
-          {bodies && <SolarSystem bodies={bodies} />}
-          {stars && <StellarNeighborhood stars={stars} />}
-          {deepSky && <DeepSkyScene items={deepSky} />}
+          {bodies && (
+            <CosmicLayer near={LAYER_RANGES.solar.near} far={LAYER_RANGES.solar.far}>
+              <SolarSystem bodies={bodies} />
+            </CosmicLayer>
+          )}
+          {stars && (
+            <CosmicLayer near={LAYER_RANGES.stars.near} far={LAYER_RANGES.stars.far}>
+              <StellarNeighborhood stars={stars} />
+            </CosmicLayer>
+          )}
+          {deepSky && (
+            <CosmicLayer near={LAYER_RANGES.deepSky.near} far={LAYER_RANGES.deepSky.far}>
+              <DeepSkyScene items={deepSky} />
+            </CosmicLayer>
+          )}
         </Region>
       </Sector>
     </Galaxy>

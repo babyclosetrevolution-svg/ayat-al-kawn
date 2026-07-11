@@ -15,10 +15,11 @@ export const ENGINE_CONFIG = {
     fov: 40,
     near: 0.01,
     far: 200000,
-    // Off-center, well pulled back. The Observer is a small presence
-    // adrift in space — the Solar System is somewhere over there, not
-    // the subject of the frame.
-    position: [-1450, 340, 2150] as [number, number, number],
+    // Well outside the Solar System's visibility range so the opening
+    // cosmos frame is dominated by empty space and faint stars, never
+    // by the Sun. The Solar System only re-emerges once the Observer
+    // travels back toward home (CosmicLayer ranges in Universe.tsx).
+    position: [-2800, 700, 4200] as [number, number, number],
   },
 
 
