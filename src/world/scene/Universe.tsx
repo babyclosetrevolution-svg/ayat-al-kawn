@@ -16,21 +16,19 @@ import type { DeepSkyBodyData } from "../../data/deep-sky";
 
 /**
  * Cosmic layer distance rules (pivot distance from origin, scene units).
- * Layers overlap softly so no hard cut is ever visible; each layer only
- * asserts itself when the Observer is at a distance where it is the
- * meaningful subject. Ranges are conservative — the eye should always
- * see mostly empty space at the opening.
+ *
+ * Phase 23.1 — Restore the cosmic journey. Every layer stays visible at
+ * every distance; progression is felt through real spatial distance, not
+ * through opacity gates. The `far` values are pushed well beyond the
+ * navigable volume so `CosmicLayer` only trims the extreme fringes
+ * (e.g. galaxies fading in from truly intergalactic distances) rather
+ * than hiding the Solar System or the Milky Way at the opening.
  */
 const LAYER_RANGES = {
-  // Solar System is the "home" layer — visible only when the Observer
-  // is close enough to read it as a system, not as decoration.
-  solar: { near: 0, far: 1800 },
-  // Nearby stars belong to the interstellar volume.
-  stars: { near: 400, far: 22000 },
-  // Intra-galactic deep sky (nebulae, clusters) — mid-range.
-  deepSky: { near: 1500, far: 45000 },
-  // Extra-galactic deep sky + Milky Way disc — only when truly far out.
-  milkyWay: { near: 6000, far: 60000 },
+  solar: { near: 0, far: 80000 },
+  stars: { near: 0, far: 80000 },
+  deepSky: { near: 0, far: 120000 },
+  milkyWay: { near: 0, far: 120000 },
 } as const;
 
 /**
