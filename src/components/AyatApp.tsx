@@ -50,9 +50,12 @@ export function AyatApp() {
   }, []);
 
   const handleBegin = () => {
+    // Land straight on Earth: observer standing on the ground, looking
+    // up at a starry sky. The Awakening remains available on demand via
+    // the replay button — the default opening is contemplation, not a
+    // scripted intro.
     StageState.set("surface");
-    if (AwakeningState.hasSeen()) setExploring(true);
-    else setAwakening(true);
+    setExploring(true);
   };
   const handleAwakeningDone = () => {
     setAwakening(false);

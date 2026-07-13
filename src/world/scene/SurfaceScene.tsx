@@ -19,10 +19,12 @@ import { StageState } from "../state/stage";
  * No planets, no Sun, no deep-sky objects are added here.
  */
 
-// Earth radius in scene units. Large enough that the horizon curves
-// gently and the atmosphere reads as a thin shell above the surface.
-const EARTH_RADIUS = 6000;
-const OBSERVER_HEIGHT = 1.7;
+// Earth radius in scene units. Kept well below the shared Starfield
+// sphere (radius ~900) so the observer stands beneath a full sky of
+// stars instead of being trapped inside the star shell. The horizon
+// still curves gently at this scale.
+const EARTH_RADIUS = 380;
+const OBSERVER_HEIGHT = 0.12;
 
 export function SurfaceScene() {
   const { camera, gl } = useThree();
@@ -42,8 +44,8 @@ export function SurfaceScene() {
     camera.position.set(0, EARTH_RADIUS + OBSERVER_HEIGHT, 0);
     const persp = camera as THREE.PerspectiveCamera;
     persp.fov = 60;
-    persp.near = 0.05;
-    persp.far = 2_000_000;
+    persp.near = 0.01;
+    persp.far = 20_000;
     persp.updateProjectionMatrix();
     return () => {
       camera.position.copy(prev.pos);
