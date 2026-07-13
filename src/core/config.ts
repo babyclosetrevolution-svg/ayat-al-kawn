@@ -15,11 +15,12 @@ export const ENGINE_CONFIG = {
     fov: 40,
     near: 0.01,
     far: 200000,
-    // Well outside the Solar System's visibility range so the opening
-    // cosmos frame is dominated by empty space and faint stars, never
-    // by the Sun. The Solar System only re-emerges once the Observer
-    // travels back toward home (CosmicLayer ranges in Universe.tsx).
-    position: [-2800, 700, 4200] as [number, number, number],
+    // Position the Observer just outside Earth's orbit when the cosmos
+    // stage begins: close enough that the Sun is a bright point and the
+    // planets read as a tiny system, far enough that nothing dominates
+    // the frame. Progressive reveal comes from real travel distance,
+    // never from opacity gates.
+    position: [-180, 55, 320] as [number, number, number],
   },
 
 
