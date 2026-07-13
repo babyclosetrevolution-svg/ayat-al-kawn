@@ -44,8 +44,8 @@ export function SurfaceScene() {
     camera.position.set(0, EARTH_RADIUS + OBSERVER_HEIGHT, 0);
     const persp = camera as THREE.PerspectiveCamera;
     persp.fov = 60;
-    persp.near = 0.05;
-    persp.far = 2_000_000;
+    persp.near = 0.01;
+    persp.far = 20_000;
     persp.updateProjectionMatrix();
     return () => {
       camera.position.copy(prev.pos);
