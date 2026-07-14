@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { BRAND } from "../core/config";
 
 interface TitleScreenProps {
@@ -6,35 +7,88 @@ interface TitleScreenProps {
 }
 
 /**
- * TitleScreen — minimal dark entry UI.
- * Renders above the Engine as a transparent overlay so the starfield
- * is visible behind the title from the very first frame.
+ * TitleScreen — le seuil.
+ *
+ * Pas de bouton, pas d'appel à l'action déguisé en verbe de jeu.
+ * L'écran est presque vide : une seule phrase, chuchotée, une étoile
+ * qui respire. Un clic — n'importe où, ou une touche — ouvre le ciel.
+ * Le titre AYAT AL-KAWN n'apparaît qu'en filigrane, brièvement, puis
+ * s'efface pour ne pas commenter l'immensité à venir.
  */
 export function TitleScreen({ visible, onBegin }: TitleScreenProps) {
+  const [prompt, setPrompt] = useState(false);
+  const [brand, setBrand] = useState(false);
+
+  useEffect(() => {
+    if (!visible) return;
+    setPrompt(false);
+    setBrand(false);
+    const t1 = setTimeout(() => setBrand(true), 900);
+    const t2 = setTimeout(() => setPrompt(true), 3400);
+    const t3 = setTimeout(() => setBrand(false), 5200);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [visible]);
+
+  useEffect(() => {
+    if (!visible) return;
+    const trigger = (e: Event) => {
+      if (e instanceof KeyboardEvent && (e.key === "Tab" || e.key === "Escape")) return;
+      onBegin();
+    };
+    window.addEventListener("pointerdown", trigger, { once: true });
+    window.addEventListener("keydown", trigger, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", trigger);
+      window.removeEventListener("keydown", trigger);
+    };
+  }, [visible, onBegin]);
+
   return (
     <div
-      className={`pointer-events-none fixed inset-0 z-40 flex flex-col items-center justify-center transition-opacity duration-[1400ms] ${
-        visible ? "opacity-100" : "opacity-0"
+      aria-hidden={!visible}
+      className={`fixed inset-0 z-40 flex flex-col items-center justify-center transition-opacity duration-[1600ms] ${
+        visible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
       }`}
     >
-      <div className="flex flex-col items-center gap-10 text-center">
-        <h1 className="text-[clamp(2.5rem,7vw,5.5rem)] font-extralight tracking-[0.35em] text-white/90">
-          {BRAND.title}
-        </h1>
-        <p className="max-w-xl text-[0.72rem] uppercase tracking-[0.4em] text-white/40">
-          {BRAND.subtitle}
-        </p>
-        <button
-          type="button"
-          onClick={onBegin}
-          className="pointer-events-auto mt-6 border border-white/25 px-10 py-3 text-[0.65rem] uppercase tracking-[0.45em] text-white/70 transition-colors duration-500 hover:border-white/70 hover:text-white"
-        >
-          Begin Exploration
-        </button>
+      {/* Étoile qui respire — point d'ancrage silencieux */}
+      <div className="relative flex items-center justify-center">
+        <span
+          className="block h-[3px] w-[3px] rounded-full bg-white/90"
+          style={{
+            boxShadow: "0 0 12px 2px rgba(255,255,255,0.55)",
+            animation: "titleBreath 5.6s ease-in-out infinite",
+          }}
+        />
       </div>
-      <div className="absolute bottom-6 text-[0.55rem] uppercase tracking-[0.5em] text-white/25">
-        v1.0 · Phase I — Engine Foundation
-      </div>
+
+      {/* Titre en filigrane, très bref */}
+      <h1
+        className={`mt-16 text-[clamp(1.6rem,4.5vw,3.2rem)] font-extralight tracking-[0.5em] text-white/60 transition-opacity duration-[2000ms] ${
+          brand ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        {BRAND.title}
+      </h1>
+
+      {/* La seule instruction — chuchotée */}
+      <p
+        className={`absolute bottom-[18%] text-[0.68rem] uppercase tracking-[0.55em] text-white/55 transition-opacity duration-[2400ms] ${
+          prompt ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        Levez les yeux
+      </p>
+
+      <style>{`
+        @keyframes titleBreath {
+          0%, 100% { opacity: 0.55; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.35); }
+        }
+      `}</style>
     </div>
   );
 }
