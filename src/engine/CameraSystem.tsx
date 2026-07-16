@@ -113,7 +113,14 @@ export function CameraSystem() {
   const right = useRef(new THREE.Vector3()).current;
   const up = useRef(new THREE.Vector3(0, 1, 0)).current;
   const move = useRef(new THREE.Vector3()).current;
+  const drift = useRef(new THREE.Vector3()).current;
   const velRef = useRef(new THREE.Vector3());
+  // Sangoku charge — 0..1 accumulator, grows while boost is held, decays fast.
+  const chargeRef = useRef(0);
+  // Rising edge detector for the "impulse tap" kick.
+  const prevForward = useRef(0);
+  const prevStrafe = useRef(0);
+  const prevVertical = useRef(0);
 
   useFrame((_, delta) => {
     const controls = controlsRef.current;
@@ -174,20 +181,35 @@ export function CameraSystem() {
         controls.maxDistance = ENGINE_CONFIG.controls.maxDistance;
       }
 
-      // --- Flight translation --------------------------------------------
-      // Continuously blended velocity profile — no discrete jumps between
-      // scale tiers. The Observer accelerates naturally as the pivot
-      // distance changes across planetary → interstellar scales.
+      // --- Flight translation (Sangoku glide) -----------------------------
+      // Vision : la caméra EST l'Observateur. Il glisse. Une simple
+      // pression accélère doucement, le relâchement produit un long coast
+      // silencieux, et Shift, tenu, charge une hyper-glisse. Le regard
+      // infléchit lentement la trajectoire — on va où l'on regarde.
       const settings = MotionSettingsStore.get();
       const pivotDist = camera.position.distanceTo(controls.target);
       const tier = pickTier(pivotDist);
       const profile = profileAtDistance(pivotDist);
-      const boost = input.boost ? 1 : 0;
+
+      // Boost charge : monte en ~1.4s quand Shift est tenu, redescend en ~0.5s.
+      const chargeRate = input.boost && !input.brake ? 0.72 : -2.0;
+      chargeRef.current = Math.max(
+        0,
+        Math.min(1, chargeRef.current + chargeRate * delta),
+      );
+      const charge = chargeRef.current;
+      // Smoothstep : la puissance grimpe doucement puis très fort en fin de charge.
+      const chargeCurve = charge * charge * (3 - 2 * charge);
+      const hyper = charge > 0.995;
+
       const brake = input.brake ? 1 : 0;
-      const baseSpeed =
-        (profile.base + (profile.boost - profile.base) * boost) *
-        settings.sensitivity *
-        (1 - brake * 0.85);
+      // baseSpeed : base → boost → hyperBoost, tout continu, jamais de palier.
+      const boostBlend = input.boost && !input.brake ? 1 : 0;
+      const sustained =
+        profile.base + (profile.boost - profile.base) * boostBlend;
+      const peak =
+        sustained + (profile.hyperBoost - sustained) * chargeCurve;
+      const baseSpeed = peak * settings.sensitivity * (1 - brake * 0.9);
 
       // Desired velocity in world space (camera-relative axes).
       persp.getWorldDirection(fwd);
@@ -200,19 +222,48 @@ export function CameraSystem() {
       if (input.vertical !== 0)
         move.addScaledVector(up, input.vertical * baseSpeed);
 
-      // Frame-rate independent glide toward desired velocity.
+      // --- Impulse tap : une pression = une vraie glissée -----------------
+      // Détecte les fronts montants (0 → non-zéro) sur chaque axe et injecte
+      // un kick directement dans la vélocité. Résultat : un tap donne un
+      // coast visible même sans maintenir la touche.
+      const KICK = 0.28; // fraction de la vitesse instantanée injectée
+      if (input.forward !== 0 && prevForward.current === 0)
+        velRef.current.addScaledVector(fwd, input.forward * baseSpeed * KICK);
+      if (input.strafe !== 0 && prevStrafe.current === 0)
+        velRef.current.addScaledVector(right, input.strafe * baseSpeed * KICK);
+      if (input.vertical !== 0 && prevVertical.current === 0)
+        velRef.current.addScaledVector(up, input.vertical * baseSpeed * KICK);
+      prevForward.current = input.forward;
+      prevStrafe.current = input.strafe;
+      prevVertical.current = input.vertical;
+
+      // --- Glide vers vitesse désirée (ramp doux) -------------------------
       const accelK = smoothK(profile.accelRate, delta);
       velRef.current.lerp(move, accelK);
+
+      // --- Look-drift : la trajectoire suit lentement le regard -----------
+      // On projette la vitesse actuelle sur la direction du regard puis on
+      // la ré-oriente doucement (~0.35 Hz). Fluide et instinctif, jamais
+      // brutal : on ne "corrige" pas, on infléchit.
+      if (hasTranslation && input.forward > 0.01) {
+        const speedNow = velRef.current.length();
+        if (speedNow > 1e-4) {
+          drift.copy(fwd).multiplyScalar(speedNow);
+          velRef.current.lerp(drift, smoothK(0.35, delta));
+        }
+      }
+
       if (!hasTranslation) {
-        // Exponential damping — long, gentle coast. Never abrupt.
+        // Coast silencieux — glisse très longue, jamais abrupte.
         const damp = Math.pow(profile.damping, delta * 60);
         velRef.current.multiplyScalar(damp);
         if (brake > 0) {
-          // Progressive brake — approaches zero smoothly, no snap.
-          velRef.current.multiplyScalar(1 - smoothK(2.4, delta));
+          // Frein progressif — approche zéro souplement, jamais snap.
+          velRef.current.multiplyScalar(1 - smoothK(2.0, delta));
         }
       }
-      if (velRef.current.lengthSq() < 1e-6) velRef.current.set(0, 0, 0);
+      // Seuil très bas : on préserve la sensation de dérive résiduelle.
+      if (velRef.current.lengthSq() < 1e-8) velRef.current.set(0, 0, 0);
 
       // Translate both camera and pivot so OrbitControls keeps its bearing.
       if (velRef.current.lengthSq() > 0) {
@@ -229,6 +280,8 @@ export function CameraSystem() {
         speed: velRef.current.length(),
         focused: false,
         translating: hasTranslation,
+        charge,
+        hyper,
       });
     }
 

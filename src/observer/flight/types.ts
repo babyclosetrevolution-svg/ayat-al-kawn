@@ -37,6 +37,8 @@ export interface VelocityProfile {
   tier: FlightTier;
   base: number;
   boost: number;
+  /** Fully-charged extra-fast ceiling (Sangoku hyper-glide). */
+  hyperBoost: number;
   /** Smoothing rate for acceleration (Hz). Higher = snappier. */
   accelRate: number;
   /** Damping factor applied per second when input is released. */

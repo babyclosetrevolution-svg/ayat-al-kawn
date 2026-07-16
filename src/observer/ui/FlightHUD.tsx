@@ -32,7 +32,7 @@ interface Props {
 }
 
 export function FlightHUD({ visible }: Props) {
-  const { tier, focused, translating, speed } = useFlightState();
+  const { tier, focused, translating, speed, charge, hyper } = useFlightState();
 
   if (!visible) return null;
 
@@ -40,6 +40,8 @@ export function FlightHUD({ visible }: Props) {
   const focusClass = focused
     ? "text-amber-200/90 border-amber-200/30"
     : "text-white/75 border-white/15";
+
+  const chargePct = Math.round(charge * 100);
 
   return (
     <div
@@ -63,6 +65,27 @@ export function FlightHUD({ visible }: Props) {
           />
           {TIER_LABEL[tier]}
         </span>
+        {charge > 0.01 && (
+          <span
+            className={`relative inline-flex items-center gap-1 overflow-hidden rounded-full border px-2 py-0.5 ${
+              hyper
+                ? "border-fuchsia-200/50 text-fuchsia-100"
+                : "border-white/20 text-white/80"
+            }`}
+            title={hyper ? "Hyper-glide" : `Charge ${chargePct}%`}
+          >
+            <span
+              className="absolute inset-y-0 left-0 -z-[1] transition-[width] duration-100 ease-out"
+              style={{
+                width: `${chargePct}%`,
+                background: hyper
+                  ? "linear-gradient(90deg, rgba(232,121,249,0.28), rgba(232,121,249,0.55))"
+                  : "linear-gradient(90deg, rgba(255,255,255,0.10), rgba(255,255,255,0.25))",
+              }}
+            />
+            {hyper ? "Hyper" : "Charge"}
+          </span>
+        )}
         <span
           className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 ${focusClass}`}
         >
