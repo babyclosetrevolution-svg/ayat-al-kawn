@@ -17,6 +17,10 @@ export interface FlightSnapshot {
   focused: boolean;
   /** True while the user is actively translating via WASD / joystick. */
   translating: boolean;
+  /** Boost charge, 0..1 — grows while Shift is held, decays on release. */
+  charge: number;
+  /** True once charge is saturated — Observer is in hyper-glide. */
+  hyper: boolean;
 }
 
 const state: FlightSnapshot = {
@@ -24,6 +28,8 @@ const state: FlightSnapshot = {
   speed: 0,
   focused: false,
   translating: false,
+  charge: 0,
+  hyper: false,
 };
 
 const listeners = new Set<(s: FlightSnapshot) => void>();
