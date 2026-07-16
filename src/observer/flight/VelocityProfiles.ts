@@ -73,6 +73,7 @@ export function blendProfiles(
     tier: b.tier,
     base: a.base + (b.base - a.base) * u,
     boost: a.boost + (b.boost - a.boost) * u,
+    hyperBoost: a.hyperBoost + (b.hyperBoost - a.hyperBoost) * u,
     accelRate: a.accelRate + (b.accelRate - a.accelRate) * u,
     damping: a.damping + (b.damping - a.damping) * u,
   };
