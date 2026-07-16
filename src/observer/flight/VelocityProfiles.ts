@@ -7,12 +7,14 @@ import type { FlightTier, VelocityProfile } from "./types";
  */
 
 export const PROFILES: Record<FlightTier, VelocityProfile> = {
-  // Slightly lower accelRate + higher damping = more perceived mass and
-  // longer natural glide, without making controls feel heavy.
-  "very-slow": { tier: "very-slow", base: 0.6, boost: 2.4, accelRate: 2.2, damping: 0.9 },
-  medium: { tier: "medium", base: 8, boost: 28, accelRate: 1.9, damping: 0.92 },
-  fast: { tier: "fast", base: 80, boost: 320, accelRate: 1.6, damping: 0.94 },
-  "very-fast": { tier: "very-fast", base: 1200, boost: 5200, accelRate: 1.3, damping: 0.95 },
+  // Long glide = high damping (closer to 1) applied per-frame when input
+  // is released. `boost` is the sustained Shift speed; `hyperBoost` is the
+  // fully-charged extra-fast ceiling reached after ~1.4s of held Shift.
+  // Sangoku feel: soft ramp, silent coast, colossal reachable speed.
+  "very-slow": { tier: "very-slow", base: 0.6, boost: 3.5, hyperBoost: 12, accelRate: 1.6, damping: 0.985 },
+  medium:      { tier: "medium",    base: 10,  boost: 55,  hyperBoost: 240, accelRate: 1.4, damping: 0.988 },
+  fast:        { tier: "fast",      base: 90,  boost: 650, hyperBoost: 3200, accelRate: 1.2, damping: 0.99 },
+  "very-fast": { tier: "very-fast", base: 1400, boost: 9000, hyperBoost: 60000, accelRate: 1.0, damping: 0.992 },
 };
 
 /** Tier thresholds (distance to focus/pivot, world units). */
