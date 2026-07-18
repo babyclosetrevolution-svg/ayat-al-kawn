@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { StageState } from "../state/stage";
+import { InputManager } from "../../observer/input/InputManager";
+
 
 /**
  * SurfaceScene — Phase 23 opening composition.
