@@ -62,14 +62,15 @@ export function FlightOnboarding({ visible }: Props) {
   if (!visible || !mounted) return null;
 
   const move = isTouch
-    ? "Left thumbstick to glide"
-    : "W A S D to glide · E / Space up · Q down";
+    ? "Joystick gauche pour glisser · doigt droit pour regarder"
+    : "W A S D pour glisser · souris pour regarder";
   const modifiers = isTouch
-    ? "Hold Boost or Brake to change pace"
-    : "Hold Shift to boost · X to brake";
+    ? "Boost pour accélérer · Frein pour ralentir"
+    : "Espace tenu pour accélérer · Shift pour freiner";
   const focus = isTouch
-    ? "Tap a body to focus · glide again to release it"
-    : "Double-click a body to focus · move to release it";
+    ? "Touchez un astre pour le focus · glissez pour repartir"
+    : "Double-clic sur un astre · WASD pour repartir";
+
 
   return (
     <div
@@ -81,7 +82,7 @@ export function FlightOnboarding({ visible }: Props) {
     >
       <div className="pointer-events-auto max-w-[min(92vw,520px)] rounded-2xl border border-white/10 bg-black/55 px-5 py-3 text-center text-[0.7rem] font-light tracking-[0.16em] text-white/85 backdrop-blur-md">
         <div className="mb-1 text-[0.55rem] uppercase tracking-[0.32em] text-white/45">
-          First flight
+          Premier vol
         </div>
         <div className="space-y-0.5 leading-relaxed">
           <div>{move}</div>
@@ -93,7 +94,7 @@ export function FlightOnboarding({ visible }: Props) {
           onClick={dismiss}
           className="mt-2 rounded-full border border-white/15 px-3 py-0.5 text-[0.5rem] uppercase tracking-[0.3em] text-white/60 transition-colors hover:border-white/40 hover:text-white/90"
         >
-          Got it
+          Compris
         </button>
       </div>
     </div>

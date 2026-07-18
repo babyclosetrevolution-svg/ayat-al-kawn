@@ -214,10 +214,11 @@ export function AyatApp() {
           {stage === "surface" && !contemplating && showHint && (
             <div className="pointer-events-none fixed inset-x-0 bottom-[8%] z-20 flex justify-center animate-fade-in">
               <p className="text-[0.6rem] uppercase tracking-[0.5em] text-white/35">
-                Faites défiler pour vous élever
+                Avancez pour vous élever
               </p>
             </div>
           )}
+
 
           {/* Rappel Tab — apparaît une fois, très bas, très pâle,
               seulement après la sortie du silence. */}
@@ -238,7 +239,7 @@ export function AyatApp() {
               Retour sur Terre
             </button>
           )}
-          {isTouch && stage === "cosmos" && <TouchControls />}
+          {isTouch && <TouchControls />}
         </>
       )}
       {awakening && (
