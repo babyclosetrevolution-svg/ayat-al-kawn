@@ -1,20 +1,26 @@
 import { InputManager } from "../InputManager";
 
 /**
- * KeyboardSource — WASD + arrows + Space/E, Shift boost, X brake.
+ * KeyboardSource — Sangoku controls, minimal set.
  *
- * Contributes to InputManager on dedicated channels so it composes cleanly
- * with touch, mouse and future gamepad sources.
+ *   W / Z / ArrowUp     → glide forward (in the direction you look)
+ *   S / ArrowDown       → glide backward
+ *   A / Q / ArrowLeft   → strafe left
+ *   D / ArrowRight      → strafe right
+ *   Space (held)        → accelerate (the longer you hold, the faster)
+ *   Shift (held)        → brake / slow down
+ *
+ * No vertical axis key — you go up/down by looking up/down and gliding
+ * forward. That is the whole point of a Sangoku-style free flight: the
+ * body follows the gaze.
  */
 
-const KEY_FORWARD = new Set(["KeyW", "ArrowUp"]);
+const KEY_FORWARD = new Set(["KeyW", "KeyZ", "ArrowUp"]);
 const KEY_BACK = new Set(["KeyS", "ArrowDown"]);
-const KEY_LEFT = new Set(["KeyA", "ArrowLeft"]);
+const KEY_LEFT = new Set(["KeyA", "KeyQ", "ArrowLeft"]);
 const KEY_RIGHT = new Set(["KeyD", "ArrowRight"]);
-const KEY_UP = new Set(["KeyE", "Space"]);
-const KEY_DOWN = new Set(["KeyQ"]);
-const KEY_BOOST = new Set(["ShiftLeft", "ShiftRight"]);
-const KEY_BRAKE = new Set(["KeyX"]);
+const KEY_BOOST = new Set(["Space"]);
+const KEY_BRAKE = new Set(["ShiftLeft", "ShiftRight"]);
 
 export interface KeyboardSourceHandle {
   dispose(): void;
@@ -23,10 +29,9 @@ export interface KeyboardSourceHandle {
 export function attachKeyboardSource(): KeyboardSourceHandle {
   const forwardCh = InputManager.allocChannel();
   const strafeCh = InputManager.allocChannel();
-  const verticalCh = InputManager.allocChannel();
   const boostCh = InputManager.allocChannel();
   const brakeCh = InputManager.allocChannel();
-  const channels = [forwardCh, strafeCh, verticalCh, boostCh, brakeCh];
+  const channels = [forwardCh, strafeCh, boostCh, brakeCh];
 
   const pressed = new Set<string>();
 
@@ -43,12 +48,7 @@ export function attachKeyboardSource(): KeyboardSourceHandle {
       if (KEY_LEFT.has(k)) s -= 1;
     }
     InputManager.setAxis("strafe", strafeCh, s);
-    let v = 0;
-    for (const k of pressed) {
-      if (KEY_UP.has(k)) v += 1;
-      if (KEY_DOWN.has(k)) v -= 1;
-    }
-    InputManager.setAxis("vertical", verticalCh, v);
+    // Vertical channel is always zero — kept only for API compatibility.
     let boost = false;
     let brake = false;
     for (const k of pressed) {
@@ -61,8 +61,7 @@ export function attachKeyboardSource(): KeyboardSourceHandle {
 
   const isNavKey = (code: string) =>
     KEY_FORWARD.has(code) || KEY_BACK.has(code) || KEY_LEFT.has(code) ||
-    KEY_RIGHT.has(code) || KEY_UP.has(code) || KEY_DOWN.has(code) ||
-    KEY_BOOST.has(code) || KEY_BRAKE.has(code);
+    KEY_RIGHT.has(code) || KEY_BOOST.has(code) || KEY_BRAKE.has(code);
 
   const onKeyDown = (ev: KeyboardEvent) => {
     if (ev.repeat) return;

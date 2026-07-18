@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { StageState } from "../state/stage";
+import { InputManager } from "../../observer/input/InputManager";
+
 
 /**
  * SurfaceScene — Phase 23 opening composition.
@@ -112,7 +114,14 @@ export function SurfaceScene() {
     const lookAt = camera.position.clone().add(fwd);
     camera.up.copy(upWorld);
     camera.lookAt(lookAt);
+    // Décollage naturel : toute translation depuis la Terre nous fait
+    // basculer immédiatement dans le cosmos, sans chargement ni bouton.
+    const s = InputManager.state;
+    if (s.forward !== 0 || s.strafe !== 0) {
+      StageState.set("cosmos");
+    }
   });
+
 
   return (
     <group>

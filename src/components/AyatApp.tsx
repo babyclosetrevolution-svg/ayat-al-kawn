@@ -167,7 +167,11 @@ export function AyatApp() {
       {/* Chrome complet — masqué par défaut, invoqué au Tab */}
       <ObserverHUD visible={chromeOn} />
       <FlightHUD visible={chromeOn} />
-      <FlightOnboarding visible={chromeOn} />
+      {/* L'onboarding vol apparaît dès l'entrée en exploration, une seule
+          fois par utilisateur — c'est LE hint essentiel, il ne doit pas
+          rester caché derrière la touche Tab. */}
+      <FlightOnboarding visible={exploring && !contemplating} />
+
       <TitleBar visible={chromeOn} />
       <ExplorerPanel visible={chromeOn} />
       <KnowledgePanel visible={chromeOn} />
@@ -210,10 +214,11 @@ export function AyatApp() {
           {stage === "surface" && !contemplating && showHint && (
             <div className="pointer-events-none fixed inset-x-0 bottom-[8%] z-20 flex justify-center animate-fade-in">
               <p className="text-[0.6rem] uppercase tracking-[0.5em] text-white/35">
-                Faites défiler pour vous élever
+                Avancez pour vous élever
               </p>
             </div>
           )}
+
 
           {/* Rappel Tab — apparaît une fois, très bas, très pâle,
               seulement après la sortie du silence. */}
@@ -234,7 +239,7 @@ export function AyatApp() {
               Retour sur Terre
             </button>
           )}
-          {isTouch && stage === "cosmos" && <TouchControls />}
+          {isTouch && <TouchControls />}
         </>
       )}
       {awakening && (
