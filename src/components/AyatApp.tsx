@@ -167,7 +167,11 @@ export function AyatApp() {
       {/* Chrome complet — masqué par défaut, invoqué au Tab */}
       <ObserverHUD visible={chromeOn} />
       <FlightHUD visible={chromeOn} />
-      <FlightOnboarding visible={chromeOn} />
+      {/* L'onboarding vol apparaît dès l'entrée en exploration, une seule
+          fois par utilisateur — c'est LE hint essentiel, il ne doit pas
+          rester caché derrière la touche Tab. */}
+      <FlightOnboarding visible={exploring && !contemplating} />
+
       <TitleBar visible={chromeOn} />
       <ExplorerPanel visible={chromeOn} />
       <KnowledgePanel visible={chromeOn} />
