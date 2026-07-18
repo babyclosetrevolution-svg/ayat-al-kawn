@@ -114,7 +114,14 @@ export function SurfaceScene() {
     const lookAt = camera.position.clone().add(fwd);
     camera.up.copy(upWorld);
     camera.lookAt(lookAt);
+    // Décollage naturel : toute translation depuis la Terre nous fait
+    // basculer immédiatement dans le cosmos, sans chargement ni bouton.
+    const s = InputManager.state;
+    if (s.forward !== 0 || s.strafe !== 0) {
+      StageState.set("cosmos");
+    }
   });
+
 
   return (
     <group>
