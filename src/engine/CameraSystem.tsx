@@ -113,14 +113,10 @@ export function CameraSystem() {
   const right = useRef(new THREE.Vector3()).current;
   const up = useRef(new THREE.Vector3(0, 1, 0)).current;
   const move = useRef(new THREE.Vector3()).current;
-  const drift = useRef(new THREE.Vector3()).current;
   const velRef = useRef(new THREE.Vector3());
-  // Sangoku charge — 0..1 accumulator, grows while boost is held, decays fast.
-  const chargeRef = useRef(0);
-  // Rising edge detector for the "impulse tap" kick.
-  const prevForward = useRef(0);
-  const prevStrafe = useRef(0);
-  const prevVertical = useRef(0);
+  // Sangoku accelerator — 0..1, ramps up while Space is held, decays on release.
+  const accelRef = useRef(0);
+
 
   useFrame((_, delta) => {
     const controls = controlsRef.current;
