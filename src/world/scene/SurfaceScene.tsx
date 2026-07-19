@@ -3,6 +3,9 @@ import { useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { StageState } from "../state/stage";
 import { InputManager } from "../../observer/input/InputManager";
+import { RealSky } from "./RealSky";
+
+
 
 
 /**
