@@ -3,6 +3,9 @@ import { useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { StageState } from "../state/stage";
 import { InputManager } from "../../observer/input/InputManager";
+import { RealSky } from "./RealSky";
+
+
 
 
 /**
@@ -138,9 +141,14 @@ export function SurfaceScene() {
       {/* Thin, bright atmospheric limb — blue base, cyan mid, warm
           orange kiss right at the horizon; fades up into deep space. */}
       <AtmosphereRim radius={EARTH_RADIUS * 1.012} />
+
+      {/* Real astronomical sky — Sun, Moon, planets, named stars at
+          their true positions for the current instant. */}
+      <RealSky />
     </group>
   );
 }
+
 
 /**
  * CityLights — a dense scatter of tiny warm points across the visible
