@@ -18,7 +18,7 @@ import { ContemplationLauncher, ContemplationOverlay } from "../contemplation";
 import { CameraAttachment, ObserverHUD, PresenceLayer, MotionField, FlightHUD, FlightOnboarding } from "../observer";
 import { TouchControls, useIsTouchDevice } from "../observer/input/TouchControls";
 import { AwakeningOverlay, AwakeningState } from "../observer/awakening";
-import { StageState, useStage } from "../world/state/stage";
+
 import "../discovery";
 import "../exploration";
 import "../encyclopedia/seed";
@@ -51,7 +51,7 @@ export function AyatApp() {
   const [showHint, setShowHint] = useState(false);
   const [chromeVisible, setChromeVisible] = useState(false);
   const isTouch = useIsTouchDevice();
-  const stage = useStage();
+
   const hintTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -130,22 +130,20 @@ export function AyatApp() {
   }, [exploring, contemplating]);
 
   const handleBegin = () => {
-    StageState.set("surface");
     setExploring(true);
     enterSurface();
   };
   const handleAwakeningDone = () => {
     setAwakening(false);
-    StageState.set("surface");
     setExploring(true);
     enterSurface();
   };
   const handleReplayAwakening = () => {
     AwakeningState.replay();
     setExploring(false);
-    StageState.set("surface");
     setAwakening(true);
   };
+
 
   // Le chrome (HUD, panneaux, replay) n'apparaît jamais pendant le
   // silence, et n'est visible ensuite que si le joueur l'invoque
@@ -211,7 +209,7 @@ export function AyatApp() {
 
           {/* Chuchotement d'invitation à s'élever — apparaît tard, très
               discrètement, s'efface au moindre geste. */}
-          {stage === "surface" && !contemplating && showHint && (
+          {!contemplating && showHint && (
             <div className="pointer-events-none fixed inset-x-0 bottom-[8%] z-20 flex justify-center animate-fade-in">
               <p className="text-[0.6rem] uppercase tracking-[0.5em] text-white/35">
                 Avancez pour vous élever
@@ -228,17 +226,6 @@ export function AyatApp() {
             </div>
           )}
 
-          {/* Retour Terre depuis le cosmos — bouton minimal, un seul,
-              en bas à gauche, jamais dominant. */}
-          {stage === "cosmos" && (
-            <button
-              type="button"
-              onClick={() => StageState.set("surface")}
-              className="pointer-events-auto fixed bottom-6 left-6 z-30 rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[0.55rem] uppercase tracking-[0.3em] text-white/50 backdrop-blur-md transition-colors hover:border-white/30 hover:text-white/80"
-            >
-              Retour sur Terre
-            </button>
-          )}
           {isTouch && <TouchControls />}
         </>
       )}

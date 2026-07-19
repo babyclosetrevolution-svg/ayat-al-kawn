@@ -9,20 +9,24 @@ export const ENGINE_CONFIG = {
     dpr: [1, 2] as [number, number],
   },
   camera: {
-    // Narrow FOV = lens compression. Combined with an off-axis
-    // position, the Sun never sits centered on landing; it's just a
-    // bright point encountered inside a much larger volume.
-    fov: 40,
+    fov: 55,
     near: 0.01,
     far: 200000,
-    // Position the Observer just outside Earth's orbit when the cosmos
-    // stage begins: close enough that the Sun is a bright point and the
-    // planets read as a tiny system, far enough that nothing dominates
-    // the frame. Progressive reveal comes from real travel distance,
-    // never from opacity gates.
-    position: [-180, 55, 320] as [number, number, number],
+    // Camera starts on the surface of the home Earth (single reference
+    // frame). Leaving the ground is a continuous flight — no scene swap.
+    // Y = EARTH_RADIUS (380) + eye height (0.12). Z = HOME_EARTH.z.
+    position: [0, 380.12, 4200] as [number, number, number],
   },
-
+  // The home Earth — a single, always-mounted surface layer that lets
+  // the Observer glide continuously from ground into deep space. Its
+  // atmosphere and lights fade smoothly with altitude; the celestial
+  // sky-shell rides with it. Placed well outside the Solar System so
+  // the Sun reads as a distant bright point on landing.
+  homeEarth: {
+    position: [0, 0, 4200] as [number, number, number],
+    radius: 380,
+    eyeHeight: 0.12,
+  },
 
   controls: {
     enableDamping: true,
@@ -39,6 +43,7 @@ export const ENGINE_CONFIG = {
     baseSize: 1.1,
   },
 } as const;
+
 
 export const BRAND = {
   title: "AYAT AL-KAWN",

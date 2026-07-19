@@ -1,161 +1,61 @@
-import { useEffect, useMemo, useRef } from "react";
-import { useThree, useFrame } from "@react-three/fiber";
+import { useMemo, useRef } from "react";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { StageState } from "../state/stage";
-import { InputManager } from "../../observer/input/InputManager";
+import { ENGINE_CONFIG } from "../../core/config";
 import { RealSky } from "./RealSky";
 
-
-
-
 /**
- * SurfaceScene — Phase 23 opening composition.
+ * SurfaceScene — the home Earth, always mounted.
  *
- * The Observer stands on Earth at night, looking up at the sky. The
- * curved horizon of the planet sits at the bottom ~15–20 % of the frame,
- * lit by:
- *   - a bright, thin atmospheric limb (blue → cyan → warm) at grazing
- *     angle, fading upward into deep space;
- *   - a scatter of city lights on the near hemisphere, faint and warm,
- *     giving the ground a lived-in quality without dominating;
- *   - the shared Starfield above (Milky-Way band + stars) rendered by
- *     WorldScene, unmodified so the sky is continuous with cosmos.
+ * Positioned at ENGINE_CONFIG.homeEarth.position, this layer renders the
+ * ground (Earth sphere), a scatter of city lights, the atmospheric limb
+ * and the real-sky shell (Sun, Moon, planets, named stars) as children
+ * of a single group. Because the group lives at a fixed world position,
+ * the Observer glides toward or away from it like any real celestial
+ * body — no scene swap, no camera hand-off, no "leaving Earth" moment.
  *
- * No planets, no Sun, no deep-sky objects are added here.
+ * Atmosphere and city lights fade smoothly with altitude so the
+ * transition from surface to space feels continuous instead of gated.
+ * Everything else (star shell, ground) stays present so the scene
+ * remains a single reference frame.
  */
 
-// Earth radius in scene units. Kept well below the shared Starfield
-// sphere (radius ~900) so the observer stands beneath a full sky of
-// stars instead of being trapped inside the star shell. The horizon
-// still curves gently at this scale.
-const EARTH_RADIUS = 380;
-const OBSERVER_HEIGHT = 0.12;
+const HOME = new THREE.Vector3(...ENGINE_CONFIG.homeEarth.position);
+const EARTH_RADIUS = ENGINE_CONFIG.homeEarth.radius;
 
 export function SurfaceScene() {
-  const { camera, gl } = useThree();
-  const yawRef = useRef(0);
-  // Small upward tilt: horizon curves at the bottom of the frame,
-  // the sky occupies ~80 % of the image.
-  const pitchRef = useRef(0.45);
-  const draggingRef = useRef(false);
-  const lastRef = useRef({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const prev = {
-      pos: camera.position.clone(),
-      quat: camera.quaternion.clone(),
-      fov: (camera as THREE.PerspectiveCamera).fov,
-    };
-    camera.position.set(0, EARTH_RADIUS + OBSERVER_HEIGHT, 0);
-    const persp = camera as THREE.PerspectiveCamera;
-    persp.fov = 60;
-    persp.near = 0.01;
-    persp.far = 20_000;
-    persp.updateProjectionMatrix();
-    return () => {
-      camera.position.copy(prev.pos);
-      camera.quaternion.copy(prev.quat);
-      persp.fov = prev.fov;
-      persp.updateProjectionMatrix();
-    };
-  }, [camera]);
-
-  useEffect(() => {
-    const el = gl.domElement;
-    const onDown = (ev: PointerEvent) => {
-      draggingRef.current = true;
-      lastRef.current = { x: ev.clientX, y: ev.clientY };
-      el.setPointerCapture(ev.pointerId);
-    };
-    const onMove = (ev: PointerEvent) => {
-      if (!draggingRef.current) return;
-      const dx = ev.clientX - lastRef.current.x;
-      const dy = ev.clientY - lastRef.current.y;
-      lastRef.current = { x: ev.clientX, y: ev.clientY };
-      const sens = 0.003;
-      yawRef.current -= dx * sens;
-      pitchRef.current = THREE.MathUtils.clamp(
-        pitchRef.current - dy * sens,
-        -0.15,
-        Math.PI / 2 - 0.05,
-      );
-    };
-    const onUp = (ev: PointerEvent) => {
-      draggingRef.current = false;
-      try {
-        el.releasePointerCapture(ev.pointerId);
-      } catch {
-        /* already released */
-      }
-    };
-    const onWheel = (ev: WheelEvent) => {
-      if (ev.deltaY > 0) StageState.set("cosmos");
-    };
-    el.addEventListener("pointerdown", onDown);
-    el.addEventListener("pointermove", onMove);
-    el.addEventListener("pointerup", onUp);
-    el.addEventListener("pointercancel", onUp);
-    el.addEventListener("wheel", onWheel, { passive: true });
-    return () => {
-      el.removeEventListener("pointerdown", onDown);
-      el.removeEventListener("pointermove", onMove);
-      el.removeEventListener("pointerup", onUp);
-      el.removeEventListener("pointercancel", onUp);
-      el.removeEventListener("wheel", onWheel);
-    };
-  }, [gl]);
-
-  const upWorld = useMemo(() => new THREE.Vector3(0, 1, 0), []);
-  useFrame(() => {
-    const yaw = yawRef.current;
-    const pitch = pitchRef.current;
-    const fwd = new THREE.Vector3(
-      Math.cos(pitch) * Math.sin(yaw),
-      Math.sin(pitch),
-      Math.cos(pitch) * Math.cos(yaw),
-    );
-    const lookAt = camera.position.clone().add(fwd);
-    camera.up.copy(upWorld);
-    camera.lookAt(lookAt);
-    // Décollage naturel : toute translation depuis la Terre nous fait
-    // basculer immédiatement dans le cosmos, sans chargement ni bouton.
-    const s = InputManager.state;
-    if (s.forward !== 0 || s.strafe !== 0) {
-      StageState.set("cosmos");
-    }
-  });
-
-
   return (
-    <group>
-      {/* Earth ground — near-black matte sphere. Only the atmospheric
-          limb separates it from the sky. */}
+    <group position={HOME}>
+      {/* Ground — near-black matte sphere. */}
       <mesh renderOrder={-3}>
         <sphereGeometry args={[EARTH_RADIUS, 128, 128]} />
         <meshBasicMaterial color="#010104" toneMapped={false} />
       </mesh>
 
-      {/* City lights scattered across the near hemisphere. */}
+      {/* City lights scattered across the hemisphere. */}
       <CityLights radius={EARTH_RADIUS * 1.0005} />
 
-      {/* Thin, bright atmospheric limb — blue base, cyan mid, warm
-          orange kiss right at the horizon; fades up into deep space. */}
+      {/* Thin, bright atmospheric limb — fades with altitude. */}
       <AtmosphereRim radius={EARTH_RADIUS * 1.012} />
 
-      {/* Real astronomical sky — Sun, Moon, planets, named stars at
-          their true positions for the current instant. */}
+      {/* Real astronomical sky — rides with the home Earth so the
+          celestial dome always surrounds the Observer while grounded. */}
       <RealSky />
     </group>
   );
 }
 
-
 /**
  * CityLights — a dense scatter of tiny warm points across the visible
- * hemisphere (observer at the pole). Additive, size-attenuated so
- * distant lights pack tightly along the horizon.
+ * hemisphere (observer at the pole). Additive; fades out as the
+ * Observer climbs above the atmosphere.
  */
 function CityLights({ radius }: { radius: number }) {
+  const matRef = useRef<THREE.PointsMaterial>(null);
+  const { camera } = useThree();
+  const worldPos = useRef(new THREE.Vector3()).current;
+  const groupPos = useRef(new THREE.Vector3()).current;
+
   const geom = useMemo(() => {
     const count = 4200;
     const positions = new Float32Array(count * 3);
@@ -163,20 +63,15 @@ function CityLights({ radius }: { radius: number }) {
     const sizes = new Float32Array(count);
     const tmp = new THREE.Color();
     for (let i = 0; i < count; i++) {
-      // Bias toward the horizon (latitude further from the pole) so
-      // lights read as distant cities smeared along the curve, not as
-      // a dot right under the camera.
       const rand = Math.random();
-      const t = Math.pow(rand, 0.35); // 0 = pole, 1 = equator
-      const phi = t * (Math.PI / 2 - 0.02); // angle from pole
+      const t = Math.pow(rand, 0.35);
+      const phi = t * (Math.PI / 2 - 0.02);
       const theta = Math.random() * Math.PI * 2;
       const sinP = Math.sin(phi);
       const cosP = Math.cos(phi);
       positions[i * 3 + 0] = radius * sinP * Math.cos(theta);
       positions[i * 3 + 1] = radius * cosP;
       positions[i * 3 + 2] = radius * sinP * Math.sin(theta);
-
-      // Warm sodium-vapour palette with occasional cool white LEDs.
       const cool = Math.random() < 0.12;
       if (cool) tmp.setHSL(0.58, 0.15, 0.75);
       else tmp.setHSL(0.09 + Math.random() * 0.03, 0.75, 0.55 + Math.random() * 0.2);
@@ -192,9 +87,23 @@ function CityLights({ radius }: { radius: number }) {
     return g;
   }, [radius]);
 
+  useFrame(({ scene }) => {
+    // Compute altitude above ground in world space.
+    scene.getWorldPosition(groupPos);
+    groupPos.copy(HOME);
+    worldPos.copy(camera.position);
+    const dist = worldPos.distanceTo(groupPos);
+    const alt = Math.max(0, dist - EARTH_RADIUS);
+    // Full at ground, gone after ~4× radius of climb.
+    const t = Math.min(1, alt / (EARTH_RADIUS * 4));
+    const fade = 1 - t;
+    if (matRef.current) matRef.current.opacity = 0.9 * fade;
+  });
+
   return (
     <points geometry={geom} renderOrder={-2}>
       <pointsMaterial
+        ref={matRef}
         vertexColors
         size={2.2}
         sizeAttenuation={false}
@@ -209,21 +118,34 @@ function CityLights({ radius }: { radius: number }) {
 }
 
 /**
- * AtmosphereRim — thin bright limb above the horizon. Grazing angle
- * (Fresnel) drives a three-stop gradient: warm at the deepest limb,
- * cyan in the middle, cold blue as it rises. Rendered on a back-side
- * sphere so the shader shades the near side of the shell.
+ * AtmosphereRim — thin bright limb above the horizon. Grazing-angle
+ * three-stop gradient (warm → cyan → cold blue). Fades to zero as the
+ * Observer climbs into space so leaving Earth is a natural transition,
+ * not a gated cutover.
  */
 function AtmosphereRim({ radius }: { radius: number }) {
+  const { camera } = useThree();
+  const worldPos = useRef(new THREE.Vector3()).current;
   const uniforms = useMemo(
     () => ({
       uColorLow: { value: new THREE.Color("#ff8a3d") },
       uColorMid: { value: new THREE.Color("#3fa8ff") },
       uColorHigh: { value: new THREE.Color("#0b2a6a") },
       uIntensity: { value: 1.35 },
+      uFade: { value: 1 },
     }),
     [],
   );
+
+  useFrame(() => {
+    worldPos.copy(camera.position);
+    const dist = worldPos.distanceTo(HOME);
+    const alt = Math.max(0, dist - EARTH_RADIUS);
+    // Atmosphere is dense at ground, thin by 2× radius, gone by 6×.
+    const t = Math.min(1, alt / (EARTH_RADIUS * 6));
+    uniforms.uFade.value = 1 - t * t * (3 - 2 * t);
+  });
+
   return (
     <mesh renderOrder={-1}>
       <sphereGeometry args={[radius, 128, 128]} />
@@ -251,21 +173,20 @@ function AtmosphereRim({ radius }: { radius: number }) {
           uniform vec3 uColorMid;
           uniform vec3 uColorHigh;
           uniform float uIntensity;
+          uniform float uFade;
           void main() {
             float ndv = abs(dot(normalize(vNormal), normalize(vView)));
-            // Grazing intensity: bright thin band at the limb.
             float rim = pow(1.0 - ndv, 6.0);
-            // Three-stop gradient across the band thickness.
-            float low  = pow(1.0 - ndv, 22.0);        // hot kiss at horizon
-            float mid  = pow(1.0 - ndv, 8.0) - low;   // cyan body
-            float high = rim - low - mid;             // cold blue rise
+            float low  = pow(1.0 - ndv, 22.0);
+            float mid  = pow(1.0 - ndv, 8.0) - low;
+            float high = rim - low - mid;
             mid = max(mid, 0.0);
             high = max(high, 0.0);
             vec3 col = uColorLow * low * 1.4
                      + uColorMid * mid * 1.0
                      + uColorHigh * high * 0.6;
-            float alpha = rim;
-            gl_FragColor = vec4(col * uIntensity, alpha);
+            float alpha = rim * uFade;
+            gl_FragColor = vec4(col * uIntensity * uFade, alpha);
           }
         `}
       />
