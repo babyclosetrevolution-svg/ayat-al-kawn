@@ -2,22 +2,24 @@ import { Starfield } from "./Starfield";
 import { Universe } from "./scene/Universe";
 import { SurfaceScene } from "./scene/SurfaceScene";
 import { SelectionHighlight } from "./components/SelectionHighlight";
-import { useStage } from "./state/stage";
 
 /**
- * WorldScene — top of the visible scene graph.
+ * WorldScene — single continuous reference frame.
  *
- * Two stages coexist:
- *  - "surface": Observer stands on Earth, looks toward the horizon.
- *  - "cosmos" : full Universe scene graph (Solar System + deep sky).
- * The shared Starfield remains in both stages so the sky is continuous.
+ * There is no longer a "surface" vs "cosmos" stage swap. The Universe
+ * (Solar System + deep sky), the shared Starfield and the home Earth
+ * surface (ground, city lights, atmospheric limb, real sky shell) are
+ * all rendered at once. Leaving Earth is a real flight through a real
+ * space — the atmosphere simply thins as altitude grows. Aiming a
+ * direction *is* reaching it: nothing dis-anchors between the sky the
+ * user looks at and the cosmos they travel through.
  */
 export function WorldScene() {
-  const stage = useStage();
   return (
     <>
       <Starfield />
-      {stage === "cosmos" ? <Universe /> : <SurfaceScene />}
+      <Universe />
+      <SurfaceScene />
       <SelectionHighlight />
     </>
   );
