@@ -95,17 +95,20 @@ class CameraDirectorImpl {
   /** Capture the existing camera/target pose so transitions feel continuous. */
   bootstrap(camera: THREE.PerspectiveCamera, target: THREE.Vector3) {
     this.currentCamera.copy(camera.position);
-    // Landing pose: gaze past the Sun, not at it. The target is offset
-    // sideways from the origin so the Solar System sits off-frame; the
-    // Observer is looking into open space, not at a hero object.
+    // Landing pose: standing on the home Earth, gaze aimed toward the
+    // sky slightly forward. The initial target sits above and ahead of
+    // the observer so OrbitControls rotates around a natural sky pivot
+    // instead of stabbing the ground.
     if (target.lengthSq() < 1e-6) {
-      this.currentTarget.set(900, -120, -520);
+      // camera is at (0, 380.12, 4200) — pivot above and slightly north.
+      this.currentTarget.set(0, 1500, 3400);
     } else {
       this.currentTarget.copy(target);
     }
     this.currentFov = camera.fov;
     this.initialized = true;
   }
+
 
 
   /**
