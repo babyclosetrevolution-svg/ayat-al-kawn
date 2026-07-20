@@ -1,4 +1,4 @@
-import { Starfield } from "./Starfield";
+import { RealStarfield, NearStarPromoter } from "./sky";
 import { Universe } from "./scene/Universe";
 import { SurfaceScene } from "./scene/SurfaceScene";
 import { SelectionHighlight } from "./components/SelectionHighlight";
@@ -6,18 +6,19 @@ import { SelectionHighlight } from "./components/SelectionHighlight";
 /**
  * WorldScene — single continuous reference frame.
  *
- * There is no longer a "surface" vs "cosmos" stage swap. The Universe
- * (Solar System + deep sky), the shared Starfield and the home Earth
- * surface (ground, city lights, atmospheric limb, real sky shell) are
- * all rendered at once. Leaving Earth is a real flight through a real
- * space — the atmosphere simply thins as altitude grows. Aiming a
- * direction *is* reaching it: nothing dis-anchors between the sky the
- * user looks at and the cosmos they travel through.
+ * The sky is no longer a procedural particle system. `RealStarfield`
+ * projects the full HYG naked-eye catalog (~9 000 real stars at their
+ * real RA/Dec, compressed only in radial distance) and every point
+ * has a stable identity in `SkyIdentityRegistry`. `NearStarPromoter`
+ * transparently upgrades close-by entries into real `<Star>` meshes,
+ * so flying toward a light grows it continuously — point → identifiable
+ * star → real sun → system. There are no anonymous particles anywhere.
  */
 export function WorldScene() {
   return (
     <>
-      <Starfield />
+      <RealStarfield />
+      <NearStarPromoter />
       <Universe />
       <SurfaceScene />
       <SelectionHighlight />
