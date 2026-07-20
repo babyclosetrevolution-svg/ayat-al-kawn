@@ -1,49 +1,74 @@
-## Phase 22.6 — Real Scale & Cosmic Distance
+## Principe
 
-The current opening drops the user into a "god-view" of the Solar System. The reference image asks for the opposite: **the Observer starts on Earth's surface, looking toward the horizon.** The naked eye sees only faint stars and the Milky Way band — no planets, no galaxies, no nebulae. Immensity is felt because almost nothing is visible.
+Aucune lumière du ciel n'est un sprite anonyme. Chaque point visible = un objet astronomique doté d'une **identité stable** (id, type, coordonnées réelles, magnitude, distance). Le rendu ne choisit que le **niveau de détail** adapté à la distance ; l'identité ne change jamais.
 
-The Solar System, deep-sky and travel systems already exist; we don't rewrite them. We add a new opening layer and reroute the entry sequence.
+## Architecture cible
 
-### What changes
+```text
+CelestialCatalog (source de vérité, jamais rendu directement)
+├── Niveau 1 — Ciel visible depuis la Terre (~9 000 étoiles réelles, mag ≤ 6.5)
+│     source: HYG catalog subset (RA/Dec/parallax/mag/spectre)
+├── Niveau 2 — Étoiles proches (~300, distance < 25 pc)
+│     visitables : possèdent un vrai Star + éventuel système procédural
+├── Niveau 3 — Galaxies (catalogue existant, deep-sky)
+│     extragalactiques, quasi-immobiles pendant le vol
+├── Niveau 4 — Objets ciel profond (nébuleuses, amas, SNR, quasars)
+│     destinations scientifiques, non décoratives
+└── Niveau 5 — Fond procédural stable (étoiles trop lointaines)
+      seed déterministe → même point toujours à la même position/couleur/type
+      inatteignable mais possède un id + type
+```
 
-**1. New `SurfaceScene` (opening layer)**
-- New file `src/world/scene/SurfaceScene.tsx`. Renders:
-  - A gently curved horizon (large low-poly sphere or ground plane with atmospheric fog) placed under the camera at ~1.7 m.
-  - A subtle atmospheric gradient (night-side by default; day/night can come later — start with night).
-  - Reuses the existing procedural `Starfield` at very low brightness/size.
-  - A faint diffuse Milky Way band (single elongated additive sprite using existing soft-glow texture) tilted across the sky.
-- No planets, no Sun, no deep-sky objects rendered in this scene.
+## LOD unique par objet
 
-**2. Two-stage scene routing**
-- Add a lightweight scene enum in `src/world/state/` (`"surface" | "cosmos"`) with a subscribe hook.
-- `WorldScene` picks `SurfaceScene` when stage is `"surface"`, `Universe` when `"cosmos"`.
-- Default stage after awakening = `"surface"`. Switching to `"cosmos"` happens when the user "leaves Earth" (zoom-out past a threshold, or an explicit "Leave Earth" affordance in the existing HUD — reuses `ExplorerPanel`, no new UI system).
+À chaque frame, pour chaque étoile du catalogue on résout un seul niveau :
 
-**3. Camera & controls on the surface**
-- On surface stage, `CameraDirector` runs in a constrained "look" mode: free 360° yaw, pitch clamped ±85°, no translation. Existing FlightController is disabled while stage === "surface". Zoom-out beyond a threshold triggers the transition to `"cosmos"`.
-- No new camera system — we set a flag the existing systems already read (`observation` vs `flight`) and clamp translation input at the FlightController level via the stage.
+```text
+point lumineux (impostor 1 px, additif)
+  ↓  distance décroît
+étoile identifiable (sprite avec halo, couleur spectrale)
+  ↓
+véritable soleil (mesh EmissiveStarMaterial + corona)
+  ↓
+système stellaire (planètes procédurales si le seed le permet)
+  ↓
+surface (déjà géré par Planet/Moon)
+```
 
-**4. Cosmos stage: preserve hierarchy from Phase 23**
-- No further changes to `bodies.ts`, `stellar.ts`, or deep-sky catalogs. The distance layering shipped in Phase 23 stays as-is.
-- When entering `"cosmos"`, camera is placed just outside Earth's position (small offset along the up-vector) so the transition reads as "leaving the atmosphere".
+Un même id passe continûment d'un niveau à l'autre — pas de pop, pas de duplication.
 
-**5. Visual purity guardrails**
-- Surface stage renders only: ground, atmosphere fog, starfield, Milky Way band. Nothing else.
-- No debug quads, no placeholder sprites. If a texture fails to load, render nothing (existing pattern).
+## Changements concrets
 
-### Files touched
+### Données
+- `src/data/stars/hyg-bright.json` — extrait HYG (~9k étoiles, mag ≤ 6.5), généré via script `scripts/build-hyg.ts` (téléchargement + filtrage + projection RA/Dec→XYZ scène).
+- `src/data/stars/catalog.ts` — élargi : chaque entrée porte `{ id, hip?, name?, ra, dec, distancePc, mag, spectralType, hasSystem: boolean }`.
+- `src/sim/procedural/BackgroundStars.ts` — nouveau : générateur déterministe (seed = cellule spatiale) qui produit les étoiles de fond inatteignables mais avec identité stable.
 
-- **new** `src/world/scene/SurfaceScene.tsx`
-- **new** `src/world/state/stage.ts` (tiny store: `getStage`, `setStage`, `useStage`)
-- **edit** `src/world/WorldScene.tsx` — pick `SurfaceScene` vs `Universe` by stage
-- **edit** `src/engine/CameraSystem.tsx` — gate translation on `stage === "cosmos"`; when `"surface"`, keep look-only + detect zoom-out transition
-- **edit** `src/components/AyatApp.tsx` — after awakening, set stage to `"surface"`; add small "Leave Earth" control in existing HUD area
-- **edit** `src/observer/awakening/state.ts` (only if needed) — reset stage to `"surface"` on replay
+### Rendu
+- **Remplacer** `src/world/Starfield.tsx` par `src/world/sky/RealStarfield.tsx` :
+  - Un seul `THREE.Points` alimenté par le catalogue HYG (positions/couleurs dérivées du type spectral, taille dérivée de la magnitude).
+  - Additive léger, sans "warm dust" ni fake milky-way band (la MW émerge de la densité réelle des étoiles + du composant existant `MilkyWayGalaxy`).
+- `src/world/sky/BackgroundStars.tsx` — points procéduraux (niveau 5), alimentés par `BackgroundStars` avec streaming par cellule.
+- `src/world/sky/StarLOD.tsx` — pour chaque étoile "proche" (distance scène < seuil), monte dynamiquement le composant `<Star>` existant ; sinon reste dans le buffer `Points`.
+- Suppression des passes "dust" et "milky-way warm band" décoratives dans Starfield.
 
-### Success criteria
+### Streaming
+- `src/streaming/StarStreamer.ts` — écoute la position caméra, promeut/démote les étoiles entre "point buffer" et "mesh Star" via `LODSystem` déjà existant.
+- Cellules déterministes → pas d'apparition brutale, tout objet promu était déjà à sa position exacte dans le buffer.
 
-- Opening frame: black sky, faint star points, a diffuse Milky Way band, Earth's horizon curving at the bottom. No planets, no galaxies visible.
-- Zooming out (or pressing "Leave Earth") smoothly transitions to the existing Solar-System/Cosmos view already tuned in Phase 23.
-- No regressions in Solar System, deep-sky, flight, or awakening. Typecheck clean.
+### Identité persistante
+- `src/world/state/identity.ts` — nouveau registre `SkyIdentityRegistry` : `raycast` sur le ciel retourne toujours un `{id, type}` même pour un pixel du fond procédural. Base pour Knowledge/Discovery futures.
 
-Shall I build it?
+## Ce qui NE change PAS
+- `Star.tsx`, `Planet.tsx`, `Moon.tsx`, `EmissiveStarMaterial`, `SolarCorona`, `FocusRegistry`, `CameraDirector`, `FlightController`, `RealSky` (ciel diurne/lunaire depuis la Terre) — tous réutilisés tels quels.
+- Deep-sky catalog et renderers (galaxies/nébuleuses) — conservés, ils deviennent simplement le Niveau 3/4 de la hiérarchie.
+
+## Livraison (une seule étape, non fractionnée)
+1. Script + import HYG → `hyg-bright.json`.
+2. `RealStarfield` remplace `Starfield` dans `WorldScene`.
+3. `BackgroundStars` + `StarStreamer` branchés.
+4. Vérification visuelle : Playwright screenshot depuis la Terre (constellations reconnaissables), puis à mi-vol vers Proxima (grossissement continu), puis vue galactique (Andromède stable).
+
+## Risques
+- Poids du JSON HYG (~500 KB gzip pour 9k étoiles) — acceptable, chargé une fois.
+- Coût GPU : un seul `Points` de 9k + ~500 procéduraux streamés → équivalent ou moins que le Starfield actuel (3 passes × milliers).
