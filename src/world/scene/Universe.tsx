@@ -11,36 +11,18 @@ import { SolarSystem } from "./SolarSystem";
 import { StellarNeighborhood } from "./StellarNeighborhood";
 import { MilkyWayScene } from "./MilkyWayScene";
 import { DeepSkyScene } from "./DeepSkyScene";
-import { CosmicLayer } from "./CosmicLayer";
+import { ScaleGroup } from "../../sim/scale";
 import type { DeepSkyBodyData } from "../../data/deep-sky";
 
 /**
- * Cosmic layer distance rules (pivot distance from origin, scene units).
+ * Universe — racine du scene-graph astronomique.
  *
- * Phase 23.1 — Restore the cosmic journey. Every layer stays visible at
- * every distance; progression is felt through real spatial distance, not
- * through opacity gates. The `far` values are pushed well beyond the
- * navigable volume so `CosmicLayer` only trims the extreme fringes
- * (e.g. galaxies fading in from truly intergalactic distances) rather
- * than hiding the Solar System or the Milky Way at the opening.
- */
-const LAYER_RANGES = {
-  solar: { near: 0, far: 80000 },
-  stars: { near: 0, far: 80000 },
-  deepSky: { near: 0, far: 120000 },
-  milkyWay: { near: 0, far: 120000 },
-} as const;
-
-/**
- * Universe — root of the astronomical scene graph.
+ *   Universe → Galaxy → Sector → Region → { SolarSystem, StellarNeighborhood, ... }
  *
- *   Universe → Galaxy → Sector → Region → { SolarSystem, StellarNeighborhood, … }
- *
- * Sector/Region are inert wrappers today; they exist so the streaming
- * layer has matching scene-graph nodes when partitioning grows beyond a
- * single solar system. Catalog mounts also register their bounding
- * regions with SpatialPartition + StreamingManager so the engine starts
- * collecting streaming telemetry immediately, with no visible change.
+ * Phase 23 : toutes les couches sont désormais gouvernées par l'unique
+ * `UniverseScaleEngine` via `ScaleGroup`. Aucun composant enfant ne
+ * décide seul de sa visibilité. Ajouter une nouvelle couche visuelle
+ * = l'envelopper dans `<ScaleGroup layer="…">`, jamais un test ad-hoc.
  */
 export function Universe() {
   const [bodies, setBodies] = useState<CelestialBodyData[] | null>(
@@ -75,7 +57,6 @@ export function Universe() {
     };
   }, [bodies, stars, deepSky]);
 
-  // Register default partition nodes once.
   useEffect(() => {
     SpatialPartition.insert({
       id: "milky-way",
@@ -109,7 +90,6 @@ export function Universe() {
     StreamingManager.registerRegion(neighborhood);
   }, []);
 
-  // Reflect catalog load count into metrics overlay.
   useEffect(() => {
     const update = () =>
       PerformanceMetrics.patch({ loadedCatalogs: CatalogManager.loadedCount() });
@@ -119,25 +99,25 @@ export function Universe() {
 
   return (
     <Galaxy>
-      <CosmicLayer near={LAYER_RANGES.milkyWay.near} far={LAYER_RANGES.milkyWay.far}>
+      <ScaleGroup layer="milkyWay">
         <MilkyWayScene />
-      </CosmicLayer>
+      </ScaleGroup>
       <Sector>
         <Region>
           {bodies && (
-            <CosmicLayer near={LAYER_RANGES.solar.near} far={LAYER_RANGES.solar.far}>
+            <ScaleGroup layer="solarBodies">
               <SolarSystem bodies={bodies} />
-            </CosmicLayer>
+            </ScaleGroup>
           )}
           {stars && (
-            <CosmicLayer near={LAYER_RANGES.stars.near} far={LAYER_RANGES.stars.far}>
+            <ScaleGroup layer="stellarNeighborhood">
               <StellarNeighborhood stars={stars} />
-            </CosmicLayer>
+            </ScaleGroup>
           )}
           {deepSky && (
-            <CosmicLayer near={LAYER_RANGES.deepSky.near} far={LAYER_RANGES.deepSky.far}>
+            <ScaleGroup layer="deepSky">
               <DeepSkyScene items={deepSky} />
-            </CosmicLayer>
+            </ScaleGroup>
           )}
         </Region>
       </Sector>

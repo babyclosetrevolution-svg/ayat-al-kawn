@@ -2,25 +2,31 @@ import { RealStarfield, NearStarPromoter } from "./sky";
 import { Universe } from "./scene/Universe";
 import { SurfaceScene } from "./scene/SurfaceScene";
 import { SelectionHighlight } from "./components/SelectionHighlight";
+import { ScaleUpdater, ScaleGroup } from "../sim/scale";
 
 /**
- * WorldScene — single continuous reference frame.
+ * WorldScene — référentiel unique et continu.
  *
- * The sky is no longer a procedural particle system. `RealStarfield`
- * projects the full HYG naked-eye catalog (~9 000 real stars at their
- * real RA/Dec, compressed only in radial distance) and every point
- * has a stable identity in `SkyIdentityRegistry`. `NearStarPromoter`
- * transparently upgrades close-by entries into real `<Star>` meshes,
- * so flying toward a light grows it continuously — point → identifiable
- * star → real sun → system. There are no anonymous particles anywhere.
+ * Phase 23 (Universe Scale Engine) : chaque couche visuelle passe par
+ * `<ScaleGroup layer="…">`. L'unique décideur de visibilité est
+ * `UniverseScaleEngine`, mis à jour une fois par frame par
+ * `<ScaleUpdater />`. Aucun composant enfant ne teste `stage`,
+ * `altitude` ou une distance à la main.
+ *
+ * Le ciel réel (`RealStarfield`, ~9 000 étoiles HYG) et le promoteur
+ * `NearStarPromoter` ne sont *jamais* éteints : le ciel réel est le
+ * référentiel présent du sol jusqu'à l'univers profond.
  */
 export function WorldScene() {
   return (
     <>
+      <ScaleUpdater />
       <RealStarfield />
       <NearStarPromoter />
       <Universe />
-      <SurfaceScene />
+      <ScaleGroup layer="surface">
+        <SurfaceScene />
+      </ScaleGroup>
       <SelectionHighlight />
     </>
   );
