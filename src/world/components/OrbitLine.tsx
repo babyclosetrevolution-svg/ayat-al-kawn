@@ -3,6 +3,8 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { VisibilityRegistry } from "../state/visibility";
 import { FocusRegistry } from "../state/focus";
+import { UniverseScaleEngine } from "../../sim/scale";
+
 
 /**
  * OrbitLine — subtle circular orbit indicator.
@@ -89,9 +91,13 @@ export function OrbitLine({
     if (ratio < 0.6) proximity = Math.max(0, ratio / 0.6);
     else if (ratio > 3) proximity = Math.max(0, 1 - (ratio - 3) / 6);
     const baseline = opacity * 0.35;
-    const target = isFocused
-      ? opacity * proximity
-      : baseline * proximity * 0.9;
+    // Phase 23 : l'opacité finale est multipliée par le facteur publié
+    // par l'UniverseScaleEngine pour la couche "orbits". Aucune décision
+    // locale — le comportement focus/distance ne fait que moduler *dans*
+    // l'enveloppe autorisée par l'engine.
+    const scaleOp = UniverseScaleEngine.getLayerOpacity("orbits");
+    const target =
+      (isFocused ? opacity * proximity : baseline * proximity * 0.9) * scaleOp;
     // Frame-rate independent smoothing.
     const k = 1 - Math.exp(-2.5 * dt);
     currentOpacityRef.current += (target - currentOpacityRef.current) * k;
