@@ -95,19 +95,26 @@ const HOME = new THREE.Vector3(...ENGINE_CONFIG.homeEarth.position);
 const R = ENGINE_CONFIG.homeEarth.radius;
 const SUN = new THREE.Vector3(0, 0, 0);
 
-// Anchors : (distance, niveau). L croît de manière monotone avec la
-// distance à la Terre puis avec la distance au Soleil.
+// Deux régimes :
+//  - Régime "lié à la Terre-mère" : l'Observateur est plus proche de la
+//    Terre que du Soleil. Le niveau est piloté par l'altitude Terre.
+//  - Régime "libre" : l'Observateur est plus proche du Soleil (ou d'un
+//    autre corps du système). Le niveau est piloté par la distance au
+//    Soleil.
+// Cette bascule évite qu'un vol vers le Soleil reste bloqué au Niv.1
+// simplement parce que la Terre-mère est à 4200 unités de l'origine.
+
 const ALT_ANCHORS = [
-  [R * 0.5, 0.0],          // au sol
+  [R * 0.5, 0.0],
   [R * 3.0, 0.7],
-  [R * 12.0, 1.2],         // franchi la Terre-Lune
+  [R * 12.0, 1.4],
 ] as const;
 
 const SUN_ANCHORS = [
-  [R * 12.0 + 4200, 1.5],  // s'éloignant de la Terre-mère
-  [6000, 2.4],             // sortie du système solaire proche
-  [22000, 3.4],            // voisinage stellaire lu
-  [70000, 4.4],            // échelle galactique
+  [1500, 2.0],
+  [6000, 2.5],
+  [22000, 3.4],
+  [70000, 4.4],
   [180000, 5.0],
 ] as const;
 
@@ -125,15 +132,17 @@ function interp(
 }
 
 export function computeLevelF(camPosition: THREE.Vector3): number {
-  const alt = Math.max(0, camPosition.distanceTo(HOME) - R);
-  const dSun = camPosition.distanceTo(SUN);
+  const distEarth = camPosition.distanceTo(HOME);
+  const distSun = camPosition.distanceTo(SUN);
+  const alt = Math.max(0, distEarth - R);
 
-  // Régime "encore lié à la Terre" : le niveau est piloté par l'altitude.
-  if (alt < R * 12.0) return interp(ALT_ANCHORS, alt);
+  // Régime lié : plus proche de la Terre-mère que du Soleil.
+  if (distEarth <= distSun) return interp(ALT_ANCHORS, alt);
 
-  // Régime "loin de la Terre" : piloté par la distance au Soleil.
-  return interp(SUN_ANCHORS, dSun);
+  // Régime libre : la distance au Soleil pilote la progression.
+  return interp(SUN_ANCHORS, distSun);
 }
+
 
 export function levelName(L: number): string {
   const names = [
