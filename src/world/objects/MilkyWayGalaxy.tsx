@@ -198,3 +198,6 @@ export function MilkyWayGalaxy({ data }: { data: GalaxyData }) {
           </>
         );
       })()}
+    </group>
+  );
+}
