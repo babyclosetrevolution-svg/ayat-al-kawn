@@ -52,27 +52,28 @@ export type ScaleLayer =
 type Curve = ReadonlyArray<readonly [level: number, opacity: number]>;
 
 const CURVES: Record<ScaleLayer, Curve> = {
-  // Surface : dominante au sol, s'efface avant Niv.2. Le sol reste
-  // physiquement présent (c'est un corps) mais devient un point.
-  surface:            [[0.0, 1.0], [0.9, 1.0], [1.6, 0.0], [5.0, 0.0]],
+  // V4 — chaque couche est unimodale et étroite : un seul niveau entier
+  // domine (opacité > 0.7), les voisins sont ≤ 0.3. Aucune plateau ne
+  // s'étend sur deux niveaux entiers distincts.
 
-  // Corps du système solaire : émergent en quittant l'atmosphère, plein
-  // rendu Niv.2, s'éteignent quand le Soleil devient une étoile.
-  solarBodies:        [[0.0, 0.0], [0.6, 0.0], [1.4, 1.0], [3.1, 1.0], [3.9, 0.0], [5.0, 0.0]],
+  // N0 Surface — dominante au sol, éteinte avant N2.
+  surface:            [[0.0, 1.0], [0.6, 1.0], [1.2, 0.0], [5.0, 0.0]],
 
-  // Orbites : jamais visibles depuis le sol, actives Niv.2 seul.
-  orbits:             [[0.0, 0.0], [1.7, 0.0], [2.2, 1.0], [2.9, 1.0], [3.5, 0.0], [5.0, 0.0]],
+  // N2 Système solaire — corps réels du Soleil aux lunes.
+  solarBodies:        [[0.0, 0.0], [0.8, 0.0], [1.5, 1.0], [2.4, 1.0], [2.9, 0.0], [5.0, 0.0]],
 
-  // Voisinage stellaire (étoiles proches nominatives) : apparaît quand
-  // le Soleil rejoint la population stellaire, reste jusqu'à la fin.
-  stellarNeighborhood:[[0.0, 0.0], [2.5, 0.0], [3.3, 1.0], [5.0, 1.0]],
+  // Orbites — même fenêtre que N2, jamais avant, jamais après.
+  orbits:             [[0.0, 0.0], [1.6, 0.0], [2.0, 1.0], [2.6, 1.0], [3.0, 0.0], [5.0, 0.0]],
 
-  // Voie Lactée : discrète au sol (bande visible), pleine puissance
-  // au Niv.4, reste présente ensuite.
-  milkyWay:           [[0.0, 0.25], [1.0, 0.25], [3.0, 1.0], [5.0, 1.0]],
+  // N3 Voisinage stellaire — pic centré sur L=3, éteint à L=4.
+  stellarNeighborhood:[[0.0, 0.0], [2.6, 0.0], [3.0, 1.0], [3.4, 1.0], [4.0, 0.0], [5.0, 0.0]],
 
-  // Ciel profond décoratif : n'apparaît qu'à l'échelle intergalactique.
-  deepSky:            [[0.0, 0.0], [3.5, 0.0], [4.5, 1.0], [5.0, 1.0]],
+  // N4 Voie Lactée — V2 : volume absent au sol et au système solaire,
+  // pic à L=4, s'éteint à L=5 pour laisser place à l'univers profond.
+  milkyWay:           [[0.0, 0.0], [3.6, 0.0], [4.0, 1.0], [4.4, 1.0], [4.9, 0.0], [5.0, 0.0]],
+
+  // N5 Univers profond — n'apparaît qu'à l'échelle intergalactique.
+  deepSky:            [[0.0, 0.0], [4.5, 0.0], [5.0, 1.0]],
 };
 
 function evalCurve(curve: Curve, L: number): number {
