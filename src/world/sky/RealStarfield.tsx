@@ -75,20 +75,27 @@ export function RealStarfield({
     return { positions, colors, sizes };
   }, [catalog]);
 
-  useFrame(({ size }) => {
-    if (materialRef.current) {
-      // Match the shader's pixel-space size to the current viewport so
-      // stars keep a consistent apparent size across resolutions.
-      (materialRef.current.uniforms.uPixelRatio.value as number) =
-        Math.min(2, window.devicePixelRatio || 1);
-      (materialRef.current.uniforms.uHeight.value as number) = size.height;
-    }
+  useFrame(({ size, camera }) => {
+    if (!materialRef.current) return;
+    // V3 — le ciel HYG doit se lire comme une sphère céleste infinie,
+    // pas comme un cube de points cartésiens. On publie la position
+    // caméra à chaque frame ; le vertex shader projette chaque étoile
+    // sur une coquille de rayon fixe autour de la caméra en préservant
+    // sa direction réelle. Les positions absolues (donc la promotion
+    // par `NearStarPromoter`) restent intactes.
+    (materialRef.current.uniforms.uPixelRatio.value as number) =
+      Math.min(2, window.devicePixelRatio || 1);
+    (materialRef.current.uniforms.uHeight.value as number) = size.height;
+    const uCam = materialRef.current.uniforms.uCam.value as THREE.Vector3;
+    uCam.copy(camera.position);
   });
 
   const uniforms = useMemo(
     () => ({
       uPixelRatio: { value: 1 },
       uHeight: { value: 1080 },
+      uCam: { value: new THREE.Vector3() },
+      uShellRadius: { value: 60_000 },
     }),
     [],
   );
@@ -113,15 +120,20 @@ export function RealStarfield({
           varying vec3 vColor;
           uniform float uPixelRatio;
           uniform float uHeight;
+          uniform vec3 uCam;
+          uniform float uShellRadius;
           void main() {
             vColor = color;
-            vec4 mv = modelViewMatrix * vec4(position, 1.0);
+            // V3 — projection sur coquille céleste centrée caméra.
+            // Direction réelle préservée (RA/Dec), parallaxe supprimée.
+            vec3 dir = position - uCam;
+            float len = length(dir);
+            vec3 shellPos = uCam + (dir / max(len, 1e-3)) * uShellRadius;
+            vec4 mv = modelViewMatrix * vec4(shellPos, 1.0);
             gl_Position = projectionMatrix * mv;
-            // Keep angular size roughly constant (small perspective term)
-            // so distant stars remain visible without being over-attenuated.
-            float dist = -mv.z;
-            float atten = clamp(1200.0 / max(60.0, dist), 0.35, 2.4);
-            gl_PointSize = aSize * uPixelRatio * atten;
+            // Taille angulaire quasi-constante — les étoiles ne
+            // rétrécissent pas quand on se déplace.
+            gl_PointSize = aSize * uPixelRatio * 1.1;
           }
         `}
         fragmentShader={/* glsl */ `
@@ -130,7 +142,6 @@ export function RealStarfield({
             vec2 d = gl_PointCoord - vec2(0.5);
             float r = length(d);
             if (r > 0.5) discard;
-            // Soft radial falloff — bright core, gentle halo.
             float core = smoothstep(0.5, 0.06, r);
             float halo = smoothstep(0.5, 0.22, r) * 0.35;
             float a = core + halo;
