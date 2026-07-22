@@ -144,18 +144,25 @@ export function DeepSkySupernovaRemnant({ data }: DeepSkyRendererProps) {
     <group ref={groupRef} userData={{ focusKey: data.id }}>
       <points geometry={shellGeom} material={shellMaterial} />
       <lineSegments geometry={filamentGeom} material={lineMaterial} />
-      {/* Central hot core */}
-      <sprite scale={[radius * 0.8, radius * 0.8, 1]}>
-        <spriteMaterial
-          map={getSoftGlowTexture() ?? undefined}
-          color={new THREE.Color(0.7, 0.9, 1)}
-          transparent
-          opacity={0.28}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-          toneMapped={false}
-        />
-      </sprite>
+      {/* Central hot core — V1 : garde le glow derrière la disponibilité
+          de la texture pour éviter tout carré gris. */}
+      {(() => {
+        const glow = getSoftGlowTexture();
+        if (!glow) return null;
+        return (
+          <sprite scale={[radius * 0.8, radius * 0.8, 1]}>
+            <spriteMaterial
+              map={glow}
+              color={new THREE.Color(0.7, 0.9, 1)}
+              transparent
+              opacity={0.28}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+              toneMapped={false}
+            />
+          </sprite>
+        );
+      })()}
     </group>
   );
 }

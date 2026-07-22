@@ -168,28 +168,36 @@ export function MilkyWayGalaxy({ data }: { data: GalaxyData }) {
           warm across the whole viewport at galactic distances; removed.
           Remaining sprites are tighter and dimmer — a hint of a bright
           nucleus, not a fullscreen wash. */}
-      <sprite scale={[bulgeR * 3.0, bulgeR * 3.0, 1]}>
-        <spriteMaterial
-          map={getSoftGlowTexture() ?? undefined}
-          color={new THREE.Color(0.95, 0.82, 0.65)}
-          transparent
-          opacity={0.08}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-          toneMapped={false}
-        />
-      </sprite>
-      <sprite scale={[bulgeR * 1.4, bulgeR * 1.4, 1]}>
-        <spriteMaterial
-          map={getSoftGlowTexture() ?? undefined}
-          color={new THREE.Color(1.0, 0.95, 0.85)}
-          transparent
-          opacity={0.28}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-          toneMapped={false}
-        />
-      </sprite>
+      {(() => {
+        const glow = getSoftGlowTexture();
+        if (!glow) return null;
+        return (
+          <>
+            <sprite scale={[bulgeR * 3.0, bulgeR * 3.0, 1]}>
+              <spriteMaterial
+                map={glow}
+                color={new THREE.Color(0.95, 0.82, 0.65)}
+                transparent
+                opacity={0.08}
+                depthWrite={false}
+                blending={THREE.AdditiveBlending}
+                toneMapped={false}
+              />
+            </sprite>
+            <sprite scale={[bulgeR * 1.4, bulgeR * 1.4, 1]}>
+              <spriteMaterial
+                map={glow}
+                color={new THREE.Color(1.0, 0.95, 0.85)}
+                transparent
+                opacity={0.28}
+                depthWrite={false}
+                blending={THREE.AdditiveBlending}
+                toneMapped={false}
+              />
+            </sprite>
+          </>
+        );
+      })()}
     </group>
   );
 }

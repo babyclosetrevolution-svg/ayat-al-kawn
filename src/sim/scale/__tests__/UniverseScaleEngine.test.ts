@@ -72,7 +72,7 @@ export function assertScaleInvariants(): void {
     "N0: surface pleine",
   );
 
-  UniverseScaleEngine.__setForTest(2.5);
+  UniverseScaleEngine.__setForTest(2);
   assert(
     UniverseScaleEngine.getLayerOpacity("solarBodies") > 0.8,
     "N2: solarBodies dominant",
@@ -80,6 +80,10 @@ export function assertScaleInvariants(): void {
   assert(UniverseScaleEngine.getLayerOpacity("orbits") > 0.6, "N2: orbites lues");
   assert(UniverseScaleEngine.getLayerOpacity("deepSky") === 0, "N2: deepSky off");
   assert(UniverseScaleEngine.getLayerOpacity("surface") === 0, "N2: surface off");
+  assert(
+    UniverseScaleEngine.getLayerOpacity("milkyWay") < 0.05,
+    "N2: Voie Lactée absente (V2)",
+  );
 
   UniverseScaleEngine.__setForTest(5);
   assert(UniverseScaleEngine.getLayerOpacity("solarBodies") === 0, "N5: solar off");
@@ -89,8 +93,8 @@ export function assertScaleInvariants(): void {
     "N5: deepSky dominant",
   );
   assert(
-    UniverseScaleEngine.getLayerOpacity("milkyWay") > 0.95,
-    "N5: Voie Lactée dominante",
+    UniverseScaleEngine.getLayerOpacity("milkyWay") < 0.2,
+    "N5: Voie Lactée cède la place à l'univers profond",
   );
 
   // ─── 3. Bande de transition (jamais binaire) ────────────────────────────
@@ -108,7 +112,8 @@ export function assertScaleInvariants(): void {
   }
 
   // ─── 4. Unimodalité : pas de re-apparition après extinction ─────────────
-  for (const layer of ["surface", "solarBodies", "orbits"] as const) {
+  for (const layer of ALL_LAYERS) {
+    if (layer === "deepSky") continue; // monotone montant, jamais éteint après pic
     let phase: "before" | "visible" | "after" = "before";
     for (let L = 0; L <= 5.001; L += 0.02) {
       UniverseScaleEngine.__setForTest(L);
@@ -117,6 +122,36 @@ export function assertScaleInvariants(): void {
       else if (phase === "visible" && op < 0.02) phase = "after";
       else if (phase === "after" && op > 0.05) {
         throw new Error(`${layer}: ré-apparition après extinction (L=${L})`);
+      }
+    }
+  }
+
+  // ─── 5. Dominance unique par niveau entier ──────────────────────────────
+  // À chaque niveau entier N ∈ {0,2,3,4,5}, une seule couche "distinctive"
+  // dépasse 0.7 (les autres restent ≤ 0.3). N=1 est une zone de transition
+  // Terre-Lune où surface et solarBodies co-habitent volontairement.
+  const distinctive: Record<number, ScaleLayer> = {
+    0: "surface",
+    2: "solarBodies",
+    3: "stellarNeighborhood",
+    4: "milkyWay",
+    5: "deepSky",
+  };
+  for (const [Lstr, expected] of Object.entries(distinctive)) {
+    const L = Number(Lstr);
+    UniverseScaleEngine.__setForTest(L);
+    for (const layer of ALL_LAYERS) {
+      const op = UniverseScaleEngine.getLayerOpacity(layer);
+      if (layer === expected) {
+        assert(op > 0.7, `N${L}: ${layer} doit dominer (op=${op.toFixed(2)})`);
+      } else if (layer === "orbits" && expected === "solarBodies") {
+        // orbites partagent la fenêtre N2 avec solarBodies — exception.
+        continue;
+      } else {
+        assert(
+          op <= 0.3,
+          `N${L}: ${layer} doit être ≤ 0.3 (op=${op.toFixed(2)})`,
+        );
       }
     }
   }
