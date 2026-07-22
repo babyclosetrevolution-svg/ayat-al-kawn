@@ -251,26 +251,30 @@ export function DeepSkyGalaxy({ data }: DeepSkyRendererProps) {
       )}
       <points geometry={bulgeGeom} material={bulgeMaterial} />
 
-      {coreLayers.map((layer, i) => (
-        <sprite
-          key={i}
-          ref={(el) => {
-            coreSpriteRefs.current[i] = el;
-            if (el) el.userData.baseOpacity = layer.opacity;
-          }}
-          scale={[layer.scale, layer.scale, 1]}
-        >
-          <spriteMaterial
-            map={getSoftGlowTexture() ?? undefined}
-            color={new THREE.Color(layer.rgb[0], layer.rgb[1], layer.rgb[2])}
-            transparent
-            opacity={layer.opacity}
-            depthWrite={false}
-            blending={THREE.AdditiveBlending}
-            toneMapped={false}
-          />
-        </sprite>
-      ))}
+      {(() => {
+        const glow = getSoftGlowTexture();
+        if (!glow) return null;
+        return coreLayers.map((layer, i) => (
+          <sprite
+            key={i}
+            ref={(el) => {
+              coreSpriteRefs.current[i] = el;
+              if (el) el.userData.baseOpacity = layer.opacity;
+            }}
+            scale={[layer.scale, layer.scale, 1]}
+          >
+            <spriteMaterial
+              map={glow}
+              color={new THREE.Color(layer.rgb[0], layer.rgb[1], layer.rgb[2])}
+              transparent
+              opacity={layer.opacity}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+              toneMapped={false}
+            />
+          </sprite>
+        ));
+      })()}
     </group>
   );
 }
