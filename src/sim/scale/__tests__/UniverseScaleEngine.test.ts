@@ -72,7 +72,7 @@ export function assertScaleInvariants(): void {
     "N0: surface pleine",
   );
 
-  UniverseScaleEngine.__setForTest(2.5);
+  UniverseScaleEngine.__setForTest(2);
   assert(
     UniverseScaleEngine.getLayerOpacity("solarBodies") > 0.8,
     "N2: solarBodies dominant",
@@ -80,6 +80,10 @@ export function assertScaleInvariants(): void {
   assert(UniverseScaleEngine.getLayerOpacity("orbits") > 0.6, "N2: orbites lues");
   assert(UniverseScaleEngine.getLayerOpacity("deepSky") === 0, "N2: deepSky off");
   assert(UniverseScaleEngine.getLayerOpacity("surface") === 0, "N2: surface off");
+  assert(
+    UniverseScaleEngine.getLayerOpacity("milkyWay") < 0.05,
+    "N2: Voie Lactée absente (V2)",
+  );
 
   UniverseScaleEngine.__setForTest(5);
   assert(UniverseScaleEngine.getLayerOpacity("solarBodies") === 0, "N5: solar off");
@@ -89,8 +93,8 @@ export function assertScaleInvariants(): void {
     "N5: deepSky dominant",
   );
   assert(
-    UniverseScaleEngine.getLayerOpacity("milkyWay") > 0.95,
-    "N5: Voie Lactée dominante",
+    UniverseScaleEngine.getLayerOpacity("milkyWay") < 0.2,
+    "N5: Voie Lactée cède la place à l'univers profond",
   );
 
   // ─── 3. Bande de transition (jamais binaire) ────────────────────────────
