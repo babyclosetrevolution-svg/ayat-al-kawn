@@ -163,18 +163,25 @@ export function DeepSkyNebula({ data }: DeepSkyRendererProps) {
         args={[geometry, material, COUNT]}
         frustumCulled={false}
       />
-      {/* Soft core glow */}
-      <sprite scale={[radius * 1.4, radius * 1.4, 1]}>
-        <spriteMaterial
-          map={getSoftGlowTexture() ?? undefined}
-          color={new THREE.Color(baseColor)}
-          transparent
-          opacity={0.12}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-          toneMapped={false}
-        />
-      </sprite>
+      {/* Soft core glow — V1 : rendu seulement quand la texture est prête,
+          sinon `spriteMaterial` sans map = carré gris opaque. */}
+      {(() => {
+        const glow = getSoftGlowTexture();
+        if (!glow) return null;
+        return (
+          <sprite scale={[radius * 1.4, radius * 1.4, 1]}>
+            <spriteMaterial
+              map={glow}
+              color={new THREE.Color(baseColor)}
+              transparent
+              opacity={0.12}
+              depthWrite={false}
+              blending={THREE.AdditiveBlending}
+              toneMapped={false}
+            />
+          </sprite>
+        );
+      })()}
     </group>
   );
 }
