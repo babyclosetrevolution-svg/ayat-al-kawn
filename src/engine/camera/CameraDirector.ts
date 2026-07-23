@@ -95,13 +95,18 @@ class CameraDirectorImpl {
   /** Capture the existing camera/target pose so transitions feel continuous. */
   bootstrap(camera: THREE.PerspectiveCamera, target: THREE.Vector3) {
     this.currentCamera.copy(camera.position);
-    // Landing pose: standing on the home Earth, gaze aimed toward the
-    // sky slightly forward. The initial target sits above and ahead of
-    // the observer so OrbitControls rotates around a natural sky pivot
-    // instead of stabbing the ground.
+    // V7 — Observer Framework. The experience opens with a human being
+    // standing on the ground, head tilted up toward the sky. Nothing
+    // else. The initial pivot therefore sits straight above the
+    // observer's head (local zenith), so OrbitControls orients the
+    // camera *upward* on the first frame. Space is never the starting
+    // vantage point — it becomes visible only after the observer flies
+    // (WASD / joystick) forward, i.e. toward the zenith, and physically
+    // leaves the atmosphere. No teleport, no scene swap.
     if (target.lengthSq() < 1e-6) {
-      // camera is at (0, 380.12, 4200) — pivot above and slightly north.
-      this.currentTarget.set(0, 1500, 3400);
+      // Camera is at (0, 380.12, 4200); home Earth center is (0, 0, 4200).
+      // Zenith is +Y — place the pivot 500u straight above the observer.
+      this.currentTarget.set(0, 880, 4200);
     } else {
       this.currentTarget.copy(target);
     }

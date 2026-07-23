@@ -76,10 +76,16 @@ export function CameraSystem() {
   }, []);
 
   // Double-click → focus the clicked celestial body.
+  // V7 — until the observer has physically left the ground (level ≥ 1),
+  // double-click is silently ignored. Focusing a distant body from the
+  // surface would launch a cinematic journey through the atmosphere,
+  // which would break the "space is a consequence of the voyage" rule.
   useEffect(() => {
     const raycaster = new THREE.Raycaster();
     const ndc = new THREE.Vector2();
-    const onDbl = (ev: MouseEvent) => {
+    const onDbl = async (ev: MouseEvent) => {
+      const { UniverseScaleEngine } = await import("../sim/scale");
+      if (UniverseScaleEngine.getLevelF() < 1.0) return;
       const rect = gl.domElement.getBoundingClientRect();
       ndc.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
       ndc.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
